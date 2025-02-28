@@ -1,4 +1,5 @@
 const popup_window_id = 'bZYtqtP9';
+const popup_parent_window_id = 'bZYtqtP9__parent';
 
 function extensionFileRead(file, fun) {
     fetch(chrome.runtime.getURL(file))
@@ -49,19 +50,23 @@ function createMessageItem(className, text) {
 
 
 function cleanPopup() {
-    let popupObj = document.getElementsByTagName(popup_window_id);
-    if (popupObj.length > 0) {
+    let popupParentObj = document.getElementsByTagName(popup_parent_window_id);
+    if (popupParentObj.length > 0) {
         // 倒序循环删除
-        for (let i = popupObj.length - 1; i >= 0; i--) {
-            popupObj[i].parentNode.removeChild(popupObj[i]);
+        for (let i = popupParentObj.length - 1; i >= 0; i--) {
+            popupParentObj[i].parentNode.removeChild(popupParentObj[i]);
         }
     }
 }
 
 function createPopupObj(x, y, innerHtml) {
+    let popupParentObj = document.createElement(popup_parent_window_id);
+    popupParentObj.style.position = 'relative';
+    document.body.appendChild(popupParentObj);
+
     let popupObj = document.createElement(popup_window_id);
     popupObj.innerHTML = innerHtml;
-    document.body.parentNode.appendChild(popupObj);
+    popupParentObj.appendChild(popupObj);
 
     let popupWidth = popupObj.offsetWidth;
     let popupHeight = popupObj.offsetHeight;
@@ -195,26 +200,26 @@ function showChatModal(x, y, selectedText) {
             } else {
                 serviceList = JSON.parse(result.serviceList);
             }
-    
+
             try {
                 result.serviceDefault = parseInt(result.serviceDefault);
             } catch (error) {
                 result.serviceDefault = null;
             }
-    
+
             if (serviceList.length > 0 && result.serviceDefault !== null && result.serviceDefault < serviceList.length) {
                 let serviceDefaultItem = serviceList[result.serviceDefault];
                 if (serviceDefaultItem) {
-    
+
                     let serviceParam_url = serviceDefaultItem.host + '/v1/chat/completions';
                     let serviceParam_key = serviceDefaultItem.key;
                     let serviceParam_model = serviceDefaultItem.modelName;
-    
-    
-    
+
+
+
                     // const url = 'https://openai-api-proxy.dongpo.li/v1/chat/completions';
                     // const url = 'https://xai-api-proxy.dongpo.li/v1/chat/completions';
-    
+
                     let data = {
                         // "model": "gpt-4o",
                         // "model": "grok-2",
@@ -222,21 +227,21 @@ function showChatModal(x, y, selectedText) {
                         "stream": true,
                         "messages": messages
                     };
-    
-                
-    
+
+
+
                     let messageItemTextLoadingHtml = '<span class="bZYtqtP9__message-item-text-loading">&nbsp;</span>';
                     let responseMessageDom = createMessageItem('bZYtqtP9__message-item-left', messageItemTextLoadingHtml);
                     popupObj.querySelector('#bZYtqtP9__message-list').appendChild(responseMessageDom);
 
                     // 清空输入框
                     popupObj.querySelector('#bZYtqtP9__chat-input-textarea').value = '';
-    
-                    responseMessageDom.scrollIntoView();
-    
-                    fetchChatMessage(serviceParam_url, serviceParam_key, data, responseMessageDom);
+
+                    scrollMessageList(popupObj);
+
+                    fetchChatMessage(serviceParam_url, serviceParam_key, data, popupObj, responseMessageDom);
                 }
-    
+
             }
         });
 
@@ -244,7 +249,7 @@ function showChatModal(x, y, selectedText) {
 
 
 
-    
+
 
 }
 
@@ -263,9 +268,16 @@ function showSummarizeModal(x, y, selectedText) {
 
 }
 
-
+/**
+ * 
+ * @param {*} x 选中的时候，鼠标的位置，x轴
+ * @param {*} y 选中的时候，鼠标的位置，y轴
+ * @param {*} selectedText 选中的文本
+ * @param {*} promptName 提示词的名称，显示在弹窗左上角标题的位置
+ * @param {*} promptText 提示词
+ */
 function showPromptModal(x, y, selectedText, promptName, promptText) {
-    
+
     let popupObj = showPopup(x, y, selectedText);
 
     popupObj.querySelector('#bZYtqtP9__chat-nav-title').innerHTML = `<span>${promptName}</span>`;
@@ -312,123 +324,142 @@ function showPromptModal(x, y, selectedText, promptName, promptText) {
                 let responseMessageDom = createMessageItem('bZYtqtP9__message-item-left', messageItemTextLoadingHtml);
                 popupObj.querySelector('#bZYtqtP9__message-list').appendChild(responseMessageDom);
 
-                responseMessageDom.scrollIntoView();
+                scrollMessageList(popupObj);
 
-                fetchChatMessage(serviceParam_url, serviceParam_key, data, responseMessageDom);
+                fetchChatMessage(serviceParam_url, serviceParam_key, data, popupObj, responseMessageDom);
             }
 
         }
     });
 
+}
 
-
-
+function scrollMessageList(popupObj) {
+    let messageListObj = popupObj.querySelector('#bZYtqtP9__message-list');
+    messageListObj.scrollTo(0, messageListObj.scrollHeight);
 }
 
 
-function fetchChatMessage(url, key, data, responseMessageDom) {
+function fetchChatMessage(url, key, data, popupObj, responseMessageDom) {
     let messageItemTextLoadingObj = responseMessageDom.querySelector('.bZYtqtP9__message-item-text-loading');
 
     // fetch(url, {
-        fetch(url, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + key,
-            },
-            body: JSON.stringify(data)
-        })
-            .then(response => {
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
+    fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + key,
+        },
+        body: JSON.stringify(data)
+    })
+        .then(response => {
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
 
 
-                // done 为数据是否接收完成 boolean 值
-                // value 为接收到的数据, Uint8Array 格式
-                return reader.read().then(function processMessage({ done, value }) {
+            // done 为数据是否接收完成 boolean 值
+            // value 为接收到的数据, Uint8Array 格式
+            return reader.read().then(function processMessage({ done, value }) {
 
-                    let responseMessageData = decoder.decode(value);
+                let responseMessageData = decoder.decode(value);
 
-                    let responseMessageStart = 'data: ';
-                    let responseMessageEnd = '[DONE]';
+                let responseMessageStart = 'data: ';
+                let responseMessageEnd = '[DONE]';
 
-                    let responseMessageLines = responseMessageData.split('\n');
+                let responseMessageLines = responseMessageData.split('\n');
 
-                    for (let i = 0; i < responseMessageLines.length; i++) {
-                        let responseMessageLine = responseMessageLines[i];
+                for (let i = 0; i < responseMessageLines.length; i++) {
+                    let responseMessageLine = responseMessageLines[i];
 
-                        let responseMessage = responseMessageLine.substring(responseMessageStart.length);
+                    let responseMessage = responseMessageLine.substring(responseMessageStart.length);
 
-                        if (responseMessage.startsWith(responseMessageEnd)) {
-                            messageItemTextLoadingObj.remove();
-                            return;
-                        }
+                    if (responseMessage.startsWith(responseMessageEnd)) {
+                        messageItemTextLoadingObj.remove();
+                        return;
+                    }
 
-                        if (responseMessage.trim().length === 0) {
-                            // messageItemTextLoadingObj.parentElement.insertBefore(document.createTextNode('\n'), messageItemTextLoadingObj);
-                            continue;
-                        }
+                    if (responseMessage.trim().length === 0) {
+                        // messageItemTextLoadingObj.parentElement.insertBefore(document.createTextNode('\n'), messageItemTextLoadingObj);
+                        continue;
+                    }
 
-                        // console.log(responseMessage);
+                    // console.log(responseMessage);
 
-                        let responseDataObj = JSON.parse(responseMessage);
-                        // console.log(responseDataObj);
+                    let responseDataObj = JSON.parse(responseMessage);
+                    // console.log(responseDataObj);
 
-                        let content = responseDataObj.choices[0].delta.content;
-                        if (!!content) {
-                            // content = content.replace(/(?:\r\n|\r|\n)/g, '<br>');
-                            messageItemTextLoadingObj.parentElement.insertBefore(document.createTextNode(content), messageItemTextLoadingObj);
-                            // responseMessageDom.querySelector('.bZYtqtP9__message-item-text').appendChild(document.createTextNode(content));
-                            responseMessageDom.scrollIntoView();
+                    let content = responseDataObj.choices[0].delta.content;
+                    if (!!content) {
+                        // content = content.replace(/(?:\r\n|\r|\n)/g, '<br>');
+                        messageItemTextLoadingObj.parentElement.insertBefore(document.createTextNode(content), messageItemTextLoadingObj);
+                        // responseMessageDom.querySelector('.bZYtqtP9__message-item-text').appendChild(document.createTextNode(content));
+                        scrollMessageList(popupObj);
 
-                        }
-
+                        popupObj.querySelector('#bZYtqtP9__message-list').scrollTo(0, popupObj.querySelector('#bZYtqtP9__message-list').scrollHeight);
 
                     }
 
-                    return reader.read().then(processMessage);
-                });
+
+                }
+
+                return reader.read().then(processMessage);
             });
+        });
 }
 
-
-function showMessageSendArea() {
-    document.querySelector('#chat-input-area').style.display = 'block';
-}
 
 function calcPopupPositionX(x, popupWidth) {
 
-    x = x - popupWidth / 2;
+    // 可视区域左边缘
+    let windowLeft = 0;
+    // 可视区域右边缘
+    let windowRight = window.innerWidth;
 
-    let windowWidth = window.innerWidth;
+    // 如果是贴边的话，距离边缘一点距离
+    let offsetX = 12;
 
-    if (x + popupWidth > windowWidth) {
-        x = windowWidth - popupWidth;
-        console.log('x', x);
+    let left = x - popupWidth / 2;
+
+    if (left + popupWidth > windowRight) {
+        left = windowRight - popupWidth - offsetX;
     }
-    if (x < 0) {
-        x = 20;
+    if (left < 0) {
+        left = windowLeft + offsetX;
     }
 
-    return x;
+    return left;
 
 }
 
 function calcPopupPositionY(y, popupHeight) {
 
+    let popupParentObj = document.getElementsByTagName(popup_parent_window_id)[0];
+    // console.log("===>" + popupParentObj.offsetTop)
+    // console.log("===>" + window.scrollY)
+
+    // 可视区域上边缘
+    let windowTop = -popupParentObj.offsetTop + window.scrollY;
+    // 可视区域下边缘
+    let windowBottom = windowTop + window.innerHeight;
+    
+
+    // 先根据父容器计算计算位置，这个位置是接下来弹窗的上边缘的中心位置
+    // 因为是相对相对于页面最下边的位置，所以应该是个负值
+    let top = -popupParentObj.offsetTop + window.scrollY + y;
+
+    // 窗口在纵向的时候，和鼠标的位置偏移一段距离，否则非常容易误操作到弹窗
+    let offsetY = 12;
     // 先无脑往下移动20px，防止直接出现在光标下边可以直接点到
-    y = y + 12;
+    top = top + offsetY;
 
-    // y = y - popupHeight / 2;
-
-    let windowHeight = window.innerHeight;
-
-    if (y + popupHeight > windowHeight) {
-        y = y - popupHeight - 12;
+    // 如果弹窗的下边缘超出了页面的最下边，在页面的最下边显示
+    if (top + popupHeight > windowBottom) {
+        top = windowBottom - popupHeight - offsetY;
     }
-    if (y < 0) {
-        y = 12;
+    // 如果弹窗的上边缘超出了页面的最上边，在页面的最上边显示
+    if (top < windowTop) {
+        top = windowTop + offsetY;
     }
 
-    return y;
+    return top;
 }

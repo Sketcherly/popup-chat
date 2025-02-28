@@ -1,6 +1,6 @@
 bZYtqtP9 {
-    display: flex;
-    position: fixed;
+    /* display: flex; */
+    position: absolute;
     top: 0;
     left: 0;
     overflow: hidden;
@@ -17,6 +17,7 @@ bZYtqtP9 .bZYtqtP9__btn-group {
 bZYtqtP9 .bZYtqtP9__btn-group>.bZYtqtP9__btn {
     position: relative;
     flex: 1 1 auto;
+    white-space: nowrap;
 }
 
 bZYtqtP9 .bZYtqtP9__btn-group {
@@ -26,6 +27,7 @@ bZYtqtP9 .bZYtqtP9__btn-group {
 }
 
 bZYtqtP9 .bZYtqtP9__btn {
+    /* width: 4em; */
     box-shadow: inset 0px 1px 0px 0px #ffffff;
     background: linear-gradient(to bottom, #ffffff 5%, #f6f6f6 100%);
     background-color: #ffffff;
@@ -38,9 +40,10 @@ bZYtqtP9 .bZYtqtP9__btn {
     /* font-family:Arial; */
     font-size: .875em;
     font-weight: normal;
-    padding: 3px 12px;
+    padding: 0.3em 0.4em;
     text-decoration: none;
     text-shadow: none;
+
 }
 
 bZYtqtP9 .bZYtqtP9__btn:hover {
@@ -195,6 +198,7 @@ bZYtqtP9 #bZYtqtP9__chat-input-textarea {
     outline: none;
     padding: 5px;
     font-size: 1em;
+    color: #000000;
 }
 
 bZYtqtP9 #bZYtqtP9__chat-input-btn-area {
