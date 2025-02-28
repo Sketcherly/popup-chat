@@ -59,7 +59,7 @@ function cleanPopup() {
     }
 }
 
-function createPopupObj(x, y, innerHtml) {
+function createPopupObj(x, y, innerHtml, init) {
     let popupParentObj = document.createElement(popup_parent_window_id);
     popupParentObj.style.position = 'relative';
     document.body.appendChild(popupParentObj);
@@ -67,6 +67,10 @@ function createPopupObj(x, y, innerHtml) {
     let popupObj = document.createElement(popup_window_id);
     popupObj.innerHTML = innerHtml;
     popupParentObj.appendChild(popupObj);
+
+    if (init) {
+        init(popupObj);
+    }
 
     let popupWidth = popupObj.offsetWidth;
     let popupHeight = popupObj.offsetHeight;
@@ -120,10 +124,11 @@ const mouseUpEventHandle = (event) => {
 document.addEventListener('mouseup', mouseUpEventHandle);
 document.addEventListener('touchend', mouseUpEventHandle);
 
-function showPopup(x, y, selectedText) {
+function showPopup(x, y, selectedText, init) {
+
     cleanPopup();
 
-    let popupObj = createPopupObj(x, y, chatWindowHtml);
+    let popupObj = createPopupObj(x, y, chatWindowHtml, init);
 
 
 
@@ -144,10 +149,11 @@ function showPopup(x, y, selectedText) {
 
 function showChatModal(x, y, selectedText) {
     let promptName = '聊天';
-    
-    let popupObj = showPopup(x, y, selectedText);
-    popupObj.querySelector('#bZYtqtP9__chat-input-area').style.display = 'block';
-    popupObj.querySelector('#bZYtqtP9__chat-nav-title').innerHTML = `<span>${promptName}</span>`;
+
+    let popupObj = showPopup(x, y, selectedText, function (_popupObj) {
+        _popupObj.querySelector('#bZYtqtP9__chat-input-area').style.display = 'block';
+        _popupObj.querySelector('#bZYtqtP9__chat-nav-title').innerHTML = `<span>${promptName}</span>`;
+    });
 
     popupObj.querySelector('#bZYtqtP9__chat-input-textarea').addEventListener('keydown', function (event) {
         if (event.keyCode == 13) {
