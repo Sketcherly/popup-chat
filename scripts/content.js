@@ -143,9 +143,11 @@ function showPopup(x, y, selectedText) {
 }
 
 function showChatModal(x, y, selectedText) {
-
+    let promptName = '聊天';
+    
     let popupObj = showPopup(x, y, selectedText);
     popupObj.querySelector('#bZYtqtP9__chat-input-area').style.display = 'block';
+    popupObj.querySelector('#bZYtqtP9__chat-nav-title').innerHTML = `<span>${promptName}</span>`;
 
     popupObj.querySelector('#bZYtqtP9__chat-input-textarea').addEventListener('keydown', function (event) {
         if (event.keyCode == 13) {
