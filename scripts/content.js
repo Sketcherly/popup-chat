@@ -109,6 +109,9 @@ const mouseUpEventHandle = (event) => {
             popupObj.querySelector('#bZYtqtP9__btn--summarize').addEventListener('click', function () {
                 showSummarizeModal(mousePositionX, mousePositionY, selectedText);
             });
+            popupObj.querySelector('#bZYtqtP9__btn--setting').addEventListener('click', function () {
+                window.open(chrome.runtime.getURL('../pages/setting.html'));
+            });
 
             popupObj.querySelector('#bZYtqtP9__btn--setting').setAttribute('href', chrome.runtime.getURL('../pages/setting.html'));
 
