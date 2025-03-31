@@ -28,17 +28,16 @@
         "scripts/content.js"
       ],
       "css": [
-        "css/styles.css",
-        "css/btn.css"
       ],
       "matches": [
-        "<all_urls>"
+        "*://*/*"
       ]
     }
   ],
   "web_accessible_resources": [
     {
       "resources": [
+        "bootstrap-5.3.3/*",
         "pages/*.html",
         "css/*.css"
       ],

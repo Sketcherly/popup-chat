@@ -1,5 +1,4 @@
 const popup_window_id = 'bZYtqtP9';
-const popup_parent_window_id = 'bZYtqtP9__parent';
 
 function extensionFileRead(file, fun) {
     fetch(chrome.runtime.getURL(file))
@@ -40,7 +39,7 @@ document.addEventListener('mousemove', function (event) {
 function createMessageItem(className, text) {
     let messageItem = document.createElement('div');
     messageItem.setAttribute('class', className);
-    messageItem.innerHTML = `<div class="bZYtqtP9__message-item-text">${text}</div>`;
+    messageItem.innerHTML = `<div class="message-item-text">${text}</div>`;
     return messageItem;
 }
 
@@ -50,34 +49,59 @@ function createMessageItem(className, text) {
 
 
 function cleanPopup() {
-    let popupParentObj = document.getElementsByTagName(popup_parent_window_id);
-    if (popupParentObj.length > 0) {
-        // 倒序循环删除
-        for (let i = popupParentObj.length - 1; i >= 0; i--) {
-            popupParentObj[i].parentNode.removeChild(popupParentObj[i]);
+    // 防止有bug导致的没有清除所以清除的时候循环一下删除所有的
+    while (true) {
+        let popupObj = document.getElementById(popup_window_id);
+        if (popupObj) {
+            popupObj.parentNode.removeChild(popupObj);
+        } else {
+            break;
         }
     }
 }
 
 function createPopupObj(x, y, innerHtml, init) {
-    let popupParentObj = document.createElement(popup_parent_window_id);
+    // 先搞一个根节点，这个元素因为是最后放的所以应该是在body的最下边，稍后根据这个元素来定位
+    let popupParentObj = document.createElement('div');
+    popupParentObj.setAttribute('id', popup_window_id);
     popupParentObj.style.position = 'relative';
     document.body.appendChild(popupParentObj);
 
-    let popupObj = document.createElement(popup_window_id);
+    let popupParentShadow = popupParentObj.attachShadow({ mode: 'closed' });
+
+    popupParentShadow.innerHTML = `
+<style>
+:root {
+    --bs-border-radius: 0.375rem;
+    --bs-border-radius-sm: 0.25rem;
+}
+</style>
+<link rel="stylesheet" href="${chrome.runtime.getURL('../css/style.css')}">
+<link rel="stylesheet" href="${chrome.runtime.getURL('../bootstrap-5.3.3/css/bootstrap.min.css')}">
+<${popup_window_id}>
+</${popup_window_id}>
+<script src="${chrome.runtime.getURL('../bootstrap-5.3.3/js/bootstrap.bundle.min.js')}"></script>`
+
+
+    let popupObj = popupParentShadow.querySelector(popup_window_id);
+    popupObj.style.visibility = 'hidden';
     popupObj.innerHTML = innerHtml;
-    popupParentObj.appendChild(popupObj);
+
 
     if (init) {
         init(popupObj);
     }
 
-    let popupWidth = popupObj.offsetWidth;
-    let popupHeight = popupObj.offsetHeight;
-    popupObj.style.left = calcPopupPositionX(x, popupWidth) + "px";
-    popupObj.style.top = calcPopupPositionY(y, popupHeight) + "px";
+    setTimeout(() => {
+        let popupWidth = popupObj.offsetWidth;
+        let popupHeight = popupObj.offsetHeight;
+        popupObj.style.left = calcPopupPositionX(x, popupWidth) + "px";
+        popupObj.style.top = calcPopupPositionY(y, popupHeight, popupParentObj) + "px";
+        popupObj.style.visibility = 'visible';
+    }, 50);
 
-    return popupObj;
+
+    return popupParentShadow;
 }
 
 const mouseUpEventHandle = (event) => {
@@ -100,20 +124,20 @@ const mouseUpEventHandle = (event) => {
             let popupObj = createPopupObj(mousePositionX, mousePositionY, menuBtnHtml);
 
 
-            popupObj.querySelector('#bZYtqtP9__btn--translate').addEventListener('click', function () {
+            popupObj.querySelector('#btn--translate').addEventListener('click', function () {
                 showTranslateModal(mousePositionX, mousePositionY, selectedText);
             });
-            popupObj.querySelector('#bZYtqtP9__btn--chat').addEventListener('click', function () {
+            popupObj.querySelector('#btn--chat').addEventListener('click', function () {
                 showChatModal(mousePositionX, mousePositionY, selectedText);
             });
-            popupObj.querySelector('#bZYtqtP9__btn--summarize').addEventListener('click', function () {
+            popupObj.querySelector('#btn--summarize').addEventListener('click', function () {
                 showSummarizeModal(mousePositionX, mousePositionY, selectedText);
             });
-            popupObj.querySelector('#bZYtqtP9__btn--setting').addEventListener('click', function () {
+            popupObj.querySelector('#btn--setting').addEventListener('click', function () {
                 window.open(chrome.runtime.getURL('../pages/setting.html'));
             });
 
-            popupObj.querySelector('#bZYtqtP9__btn--setting').setAttribute('href', chrome.runtime.getURL('../pages/setting.html'));
+            popupObj.querySelector('#btn--setting').setAttribute('href', chrome.runtime.getURL('../pages/setting.html'));
 
             popupObj.addEventListener('mouseup', function (event) {
                 event.stopPropagation(); //阻止冒泡
@@ -135,12 +159,12 @@ function showPopup(x, y, selectedText, init) {
 
 
 
-    let selectedTextChatItemObj = createMessageItem('bZYtqtP9__message-item-right', selectedText);
-    selectedTextChatItemObj.querySelector('.bZYtqtP9__message-item-text').setAttribute('style', 'overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;');
-    popupObj.querySelector('#bZYtqtP9__message-list').appendChild(selectedTextChatItemObj);
+    let selectedTextChatItemObj = createMessageItem('message-item-right', selectedText);
+    selectedTextChatItemObj.querySelector('.message-item-text').setAttribute('style', 'overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;');
+    popupObj.querySelector('#message-list').appendChild(selectedTextChatItemObj);
 
 
-    popupObj.querySelector('#bZYtqtP9__chat-nav-close').addEventListener('click', function () {
+    popupObj.querySelector('#chat-nav-close').addEventListener('click', function () {
         cleanPopup();
     });
     popupObj.addEventListener('mouseup', function (event) {
@@ -154,26 +178,26 @@ function showChatModal(x, y, selectedText) {
     let promptName = '聊天';
 
     let popupObj = showPopup(x, y, selectedText, function (_popupObj) {
-        _popupObj.querySelector('#bZYtqtP9__chat-input-area').style.display = 'block';
-        _popupObj.querySelector('#bZYtqtP9__chat-nav-title').innerHTML = `<span>${promptName}</span>`;
+        _popupObj.querySelector('#chat-input-area').style.display = 'block';
+        _popupObj.querySelector('#chat-nav-title').innerHTML = `<span>${promptName}</span>`;
     });
 
-    popupObj.querySelector('#bZYtqtP9__chat-input-textarea').addEventListener('keydown', function (event) {
+    popupObj.querySelector('#chat-input-textarea').addEventListener('keydown', function (event) {
         if (event.keyCode == 13) {
             event.preventDefault();
-            popupObj.querySelector('#bZYtqtP9__chat-input-btn').click();
+            popupObj.querySelector('#chat-input-btn').click();
         }
     });
 
-    popupObj.querySelector('#bZYtqtP9__chat-input-btn').addEventListener('click', function () {
-        let inputText = popupObj.querySelector('#bZYtqtP9__chat-input-textarea').value;
+    popupObj.querySelector('#chat-input-btn').addEventListener('click', function () {
+        let inputText = popupObj.querySelector('#chat-input-textarea').value;
         if (inputText.trim().length == 0) {
             return;
         }
 
-        let messageListObj = popupObj.querySelector('#bZYtqtP9__message-list');
+        let messageListObj = popupObj.querySelector('#message-list');
 
-        let selectedTextChatItemObj = createMessageItem('bZYtqtP9__message-item-right', inputText);
+        let selectedTextChatItemObj = createMessageItem('message-item-right', inputText);
         messageListObj.appendChild(selectedTextChatItemObj);
 
         let messages = [
@@ -192,15 +216,15 @@ function showChatModal(x, y, selectedText) {
                 "content": ""
             }
 
-            if (item.classList.contains('bZYtqtP9__message-item-right')) {
+            if (item.classList.contains('message-item-right')) {
                 messageItem.role = 'user';
-            } else if (item.classList.contains('bZYtqtP9__message-item-left')) {
+            } else if (item.classList.contains('message-item-left')) {
                 messageItem.role = 'assistant';
             } else {
                 messageItem.role = 'system';
             }
 
-            messageItem.content = item.querySelector('.bZYtqtP9__message-item-text').innerText;
+            messageItem.content = item.querySelector('.message-item-text').innerText;
 
             messages.push(messageItem);
         }
@@ -241,12 +265,12 @@ function showChatModal(x, y, selectedText) {
 
 
 
-                    let messageItemTextLoadingHtml = '<span class="bZYtqtP9__message-item-text-loading">&nbsp;</span>';
-                    let responseMessageDom = createMessageItem('bZYtqtP9__message-item-left', messageItemTextLoadingHtml);
-                    popupObj.querySelector('#bZYtqtP9__message-list').appendChild(responseMessageDom);
+                    let messageItemTextLoadingHtml = '<span class="message-item-text-loading">&nbsp;</span>';
+                    let responseMessageDom = createMessageItem('message-item-left', messageItemTextLoadingHtml);
+                    popupObj.querySelector('#message-list').appendChild(responseMessageDom);
 
                     // 清空输入框
-                    popupObj.querySelector('#bZYtqtP9__chat-input-textarea').value = '';
+                    popupObj.querySelector('#chat-input-textarea').value = '';
 
                     scrollMessageList(popupObj);
 
@@ -370,7 +394,7 @@ function showPromptModal(x, y, selectedText, promptName, promptText) {
 
     let popupObj = showPopup(x, y, selectedText);
 
-    popupObj.querySelector('#bZYtqtP9__chat-nav-title').innerHTML = `<span>${promptName}</span>`;
+    popupObj.querySelector('#chat-nav-title').innerHTML = `<span>${promptName}</span>`;
 
     chrome.storage.local.get(["serviceList", 'serviceDefault']).then((result) => {
         if (!result.serviceList) {
@@ -406,9 +430,9 @@ function showPromptModal(x, y, selectedText, promptName, promptText) {
                     ]
                 };
 
-                let messageItemTextLoadingHtml = '<span class="bZYtqtP9__message-item-text-loading">&nbsp;</span>';
-                let responseMessageDom = createMessageItem('bZYtqtP9__message-item-left', messageItemTextLoadingHtml);
-                popupObj.querySelector('#bZYtqtP9__message-list').appendChild(responseMessageDom);
+                let messageItemTextLoadingHtml = '<span class="message-item-text-loading">&nbsp;</span>';
+                let responseMessageDom = createMessageItem('message-item-left', messageItemTextLoadingHtml);
+                popupObj.querySelector('#message-list').appendChild(responseMessageDom);
 
                 scrollMessageList(popupObj);
 
@@ -421,13 +445,13 @@ function showPromptModal(x, y, selectedText, promptName, promptText) {
 }
 
 function scrollMessageList(popupObj) {
-    let messageListObj = popupObj.querySelector('#bZYtqtP9__message-list');
+    let messageListObj = popupObj.querySelector('#message-list');
     messageListObj.scrollTo(0, messageListObj.scrollHeight);
 }
 
 
 function fetchChatMessage(url, key, data, popupObj, responseMessageDom) {
-    let messageItemTextLoadingObj = responseMessageDom.querySelector('.bZYtqtP9__message-item-text-loading');
+    let messageItemTextLoadingObj = responseMessageDom.querySelector('.message-item-text-loading');
 
     // fetch(url, {
     fetch(url, {
@@ -478,10 +502,10 @@ function fetchChatMessage(url, key, data, popupObj, responseMessageDom) {
                     if (!!content) {
                         // content = content.replace(/(?:\r\n|\r|\n)/g, '<br>');
                         messageItemTextLoadingObj.parentElement.insertBefore(document.createTextNode(content), messageItemTextLoadingObj);
-                        // responseMessageDom.querySelector('.bZYtqtP9__message-item-text').appendChild(document.createTextNode(content));
+                        // responseMessageDom.querySelector('.message-item-text').appendChild(document.createTextNode(content));
                         scrollMessageList(popupObj);
 
-                        popupObj.querySelector('#bZYtqtP9__message-list').scrollTo(0, popupObj.querySelector('#bZYtqtP9__message-list').scrollHeight);
+                        popupObj.querySelector('#message-list').scrollTo(0, popupObj.querySelector('#message-list').scrollHeight);
 
                     }
 
@@ -517,9 +541,9 @@ function calcPopupPositionX(x, popupWidth) {
 
 }
 
-function calcPopupPositionY(y, popupHeight) {
+function calcPopupPositionY(y, popupHeight, popupParentObj) {
 
-    let popupParentObj = document.getElementsByTagName(popup_parent_window_id)[0];
+    // let popupParentObj = document.getElementsByTagName(popup_window_id)[0];
     // console.log("===>" + popupParentObj.offsetTop)
     // console.log("===>" + window.scrollY)
 
