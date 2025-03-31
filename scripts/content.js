@@ -70,17 +70,10 @@ function createPopupObj(x, y, innerHtml, init) {
     let popupParentShadow = popupParentObj.attachShadow({ mode: 'closed' });
 
     popupParentShadow.innerHTML = `
-<style>
-:root {
-    --bs-border-radius: 0.375rem;
-    --bs-border-radius-sm: 0.25rem;
-}
-</style>
-<link rel="stylesheet" href="${chrome.runtime.getURL('../css/style.css')}">
 <link rel="stylesheet" href="${chrome.runtime.getURL('../bootstrap-5.3.3/css/bootstrap.min.css')}">
+<link rel="stylesheet" href="${chrome.runtime.getURL('../css/style.css')}">
 <${popup_window_id}>
-</${popup_window_id}>
-<script src="${chrome.runtime.getURL('../bootstrap-5.3.3/js/bootstrap.bundle.min.js')}"></script>`
+</${popup_window_id}>`
 
 
     let popupObj = popupParentShadow.querySelector(popup_window_id);

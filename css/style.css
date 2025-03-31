@@ -9,6 +9,13 @@ bZYtqtP9 {
     font-size: 16px;
 }
 
+/* bootstrap默认使用的是rem，有些页面会更改rem导致按钮过小，比如www.v2ex.com，所以覆盖一下 */
+bZYtqtP9 .btn-sm, bZYtqtP9 .btn-group-sm > .btn {
+    --bs-btn-padding-y: 0.25em;
+    --bs-btn-padding-x: 0.5em;
+    --bs-btn-font-size: 0.875em;
+    --bs-btn-border-radius: 0.25em;
+}
 
 
 /* ----- 聊天窗口样式 ----- */
