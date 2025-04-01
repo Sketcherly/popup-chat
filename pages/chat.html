@@ -1,33 +1,13 @@
-<div id="container">
-    <div id="chat-nav">
-        <div id="chat-nav-title">
-            <span></span>
-        </div>
-        <div id="chat-nav-close">
-            <span id="chat-nav-close-btn"></span>
-        </div>
+<div class="chat-container">
+    <div class="chat-nav-title">
+        <h3>聊天窗口</h3>
     </div>
-    <div id="message-list">
-        <!-- <div class="message-item-right">
-            <div class="message-item-text">
-                web前端设计
-            </div>
-        </div>
-        <div class="message-item-left">
-            <div class="message-item-text">
-                WEB前端设计
-            </div>
-        </div> -->
+    <div class="message-list" id="message-list">
+        <!-- 示例消息 -->
+        <!-- <div class="message-item-text message-item-text-left">您好！有什么我可以帮助您的吗？</div> -->
     </div>
-    <!-- <div>
-        <button onclick="showMessageSendArea()">继续交谈</button>
-    </div> -->
-    <div id="chat-input-area" style="display: none;">
-        <textarea id="chat-input-textarea"></textarea>
-        <div id="chat-input-btn-area">
-            <span id="chat-input-btn">
-                <text id="chat-input-btn-text">发送(S)</text>
-            </span>
-        </div>
+    <div class="chat-input" id="chat-input" style="display: none;">
+        <textarea id="chat-input-textarea" placeholder="" rows="1"></textarea>
+        <button id="chat-input-send-btn">发送</button>
     </div>
 </div>

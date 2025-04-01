@@ -38,8 +38,8 @@ document.addEventListener('mousemove', function (event) {
 
 function createMessageItem(className, text) {
     let messageItem = document.createElement('div');
-    messageItem.setAttribute('class', className);
-    messageItem.innerHTML = `<div class="message-item-text">${text}</div>`;
+    messageItem.classList.add('message-item-text', className);
+    messageItem.innerHTML = text;
     return messageItem;
 }
 
@@ -152,14 +152,15 @@ function showPopup(x, y, selectedText, init) {
 
 
 
-    let selectedTextChatItemObj = createMessageItem('message-item-right', selectedText);
-    selectedTextChatItemObj.querySelector('.message-item-text').setAttribute('style', 'overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;');
+    let selectedTextChatItemObj = createMessageItem('message-item-text-right', selectedText);
+    // 有bug暂时先去掉
+    // selectedTextChatItemObj.setAttribute('style', 'overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;');
     popupObj.querySelector('#message-list').appendChild(selectedTextChatItemObj);
 
 
-    popupObj.querySelector('#chat-nav-close').addEventListener('click', function () {
-        cleanPopup();
-    });
+    // popupObj.querySelector('#chat-nav-close').addEventListener('click', function () {
+    //     cleanPopup();
+    // });
     popupObj.addEventListener('mouseup', function (event) {
         event.stopPropagation(); //阻止冒泡
     });
@@ -168,21 +169,27 @@ function showPopup(x, y, selectedText, init) {
 }
 
 function showChatModal(x, y, selectedText) {
-    let promptName = '聊天';
+    let promptName = '对话';
 
     let popupObj = showPopup(x, y, selectedText, function (_popupObj) {
-        _popupObj.querySelector('#chat-input-area').style.display = 'block';
-        _popupObj.querySelector('#chat-nav-title').innerHTML = `<span>${promptName}</span>`;
+        _popupObj.querySelector('#chat-input').style.display = 'block';
+        _popupObj.querySelector('.chat-nav-title').innerHTML = `<h3>${promptName}</h3>`;
     });
 
     popupObj.querySelector('#chat-input-textarea').addEventListener('keydown', function (event) {
-        if (event.keyCode == 13) {
+        if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
-            popupObj.querySelector('#chat-input-btn').click();
+            popupObj.querySelector('#chat-input-send-btn').click();
         }
     });
 
-    popupObj.querySelector('#chat-input-btn').addEventListener('click', function () {
+    // 处理文本框自动增高
+    popupObj.querySelector('#chat-input-textarea').addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+
+    popupObj.querySelector('#chat-input-send-btn').addEventListener('click', function () {
         let inputText = popupObj.querySelector('#chat-input-textarea').value;
         if (inputText.trim().length == 0) {
             return;
@@ -190,7 +197,7 @@ function showChatModal(x, y, selectedText) {
 
         let messageListObj = popupObj.querySelector('#message-list');
 
-        let selectedTextChatItemObj = createMessageItem('message-item-right', inputText);
+        let selectedTextChatItemObj = createMessageItem('message-item-text-right', inputText);
         messageListObj.appendChild(selectedTextChatItemObj);
 
         let messages = [
@@ -202,22 +209,22 @@ function showChatModal(x, y, selectedText) {
 
         for (let i = 0; i < messageListObj.children.length; i++) {
             let item = messageListObj.children[i];
-            console.log(item);
+            // console.log(item);
 
             let messageItem = {
                 "role": "",
                 "content": ""
             }
 
-            if (item.classList.contains('message-item-right')) {
+            if (item.classList.contains('message-item-text-right')) {
                 messageItem.role = 'user';
-            } else if (item.classList.contains('message-item-left')) {
+            } else if (item.classList.contains('message-item-text-left')) {
                 messageItem.role = 'assistant';
             } else {
                 messageItem.role = 'system';
             }
 
-            messageItem.content = item.querySelector('.message-item-text').innerText;
+            messageItem.content = item.innerText;
 
             messages.push(messageItem);
         }
@@ -259,11 +266,13 @@ function showChatModal(x, y, selectedText) {
 
 
                     let messageItemTextLoadingHtml = '<span class="message-item-text-loading">&nbsp;</span>';
-                    let responseMessageDom = createMessageItem('message-item-left', messageItemTextLoadingHtml);
+                    let responseMessageDom = createMessageItem('message-item-text-left', messageItemTextLoadingHtml);
                     popupObj.querySelector('#message-list').appendChild(responseMessageDom);
 
                     // 清空输入框
-                    popupObj.querySelector('#chat-input-textarea').value = '';
+                    let inputTextObj = popupObj.querySelector('#chat-input-textarea');
+                    inputTextObj.value = '';
+                    inputTextObj.style.height = '48px';
 
                     scrollMessageList(popupObj);
 
@@ -387,7 +396,7 @@ function showPromptModal(x, y, selectedText, promptName, promptText) {
 
     let popupObj = showPopup(x, y, selectedText);
 
-    popupObj.querySelector('#chat-nav-title').innerHTML = `<span>${promptName}</span>`;
+    popupObj.querySelector('.chat-nav-title').innerHTML = `<h3>${promptName}</h3>`;
 
     chrome.storage.local.get(["serviceList", 'serviceDefault']).then((result) => {
         if (!result.serviceList) {
@@ -424,7 +433,7 @@ function showPromptModal(x, y, selectedText, promptName, promptText) {
                 };
 
                 let messageItemTextLoadingHtml = '<span class="message-item-text-loading">&nbsp;</span>';
-                let responseMessageDom = createMessageItem('message-item-left', messageItemTextLoadingHtml);
+                let responseMessageDom = createMessageItem('message-item-text-left', messageItemTextLoadingHtml);
                 popupObj.querySelector('#message-list').appendChild(responseMessageDom);
 
                 scrollMessageList(popupObj);
@@ -439,7 +448,8 @@ function showPromptModal(x, y, selectedText, promptName, promptText) {
 
 function scrollMessageList(popupObj) {
     let messageListObj = popupObj.querySelector('#message-list');
-    messageListObj.scrollTo(0, messageListObj.scrollHeight);
+    messageListObj.scrollTop = messageListObj.scrollHeight;
+    // messageListObj.scrollTo(0, messageListObj.scrollHeight);
 }
 
 
