@@ -246,7 +246,7 @@ function showChatModal(x, y, selectedText) {
                 let serviceDefaultItem = serviceList[result.serviceDefault];
                 if (serviceDefaultItem) {
 
-                    let serviceParam_url = serviceDefaultItem.host + '/v1/chat/completions';
+                    let serviceParam_url = serviceDefaultItem.host + 'chat/completions';
                     let serviceParam_key = serviceDefaultItem.key;
                     let serviceParam_model = serviceDefaultItem.modelName;
 
@@ -415,7 +415,7 @@ function showPromptModal(x, y, selectedText, promptName, promptText) {
             let serviceDefaultItem = serviceList[result.serviceDefault];
             if (serviceDefaultItem) {
 
-                let serviceParam_url = serviceDefaultItem.host + '/v1/chat/completions';
+                let serviceParam_url = serviceDefaultItem.host + 'chat/completions';
                 let serviceParam_key = serviceDefaultItem.key;
                 let serviceParam_model = serviceDefaultItem.modelName;
 
