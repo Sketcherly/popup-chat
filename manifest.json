@@ -37,6 +37,7 @@
   "web_accessible_resources": [
     {
       "resources": [
+        "index.html",
         "bootstrap-5.3.3/*",
         "pages/*.html",
         "css/*.css"

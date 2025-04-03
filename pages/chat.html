@@ -1,13 +1,36 @@
-<div class="chat-container">
-    <div class="chat-nav-title">
-        <h3>聊天窗口</h3>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../css/chat.css">
+
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="chat-container">
+        <!-- <div class="chat-nav-title">
+            <h3>聊天窗口</h3>
+        </div> -->
+        <div class="message-list" id="message-list">
+            <!-- 示例消息 -->
+            <!-- <div class="message-item-text message-item-text-left">您好！有什么我可以帮助您的吗？</div> -->
+        </div>
+        <!-- <div class="chat-input" id="chat-input">
+            <textarea id="chat-input-textarea" placeholder="" rows="1"></textarea>
+            <button id="chat-input-send-btn">发送</button>
+        </div> -->
     </div>
-    <div class="message-list" id="message-list">
-        <!-- 示例消息 -->
-        <!-- <div class="message-item-text message-item-text-left">您好！有什么我可以帮助您的吗？</div> -->
-    </div>
-    <div class="chat-input" id="chat-input" style="display: none;">
-        <textarea id="chat-input-textarea" placeholder="" rows="1"></textarea>
-        <button id="chat-input-send-btn">发送</button>
-    </div>
-</div>
+
+    <script src="../axios-0.30.0/axios.min.js"></script>
+    <script src="../scripts/api.js"></script>
+    <script src="../scripts/chat.js"></script>
+</body>
+</html>

@@ -1,4 +1,5 @@
-const popup_window_id = 'bZYtqtP9';
+// 一个随机字符串当唯一标识符，防止与页面中的其他元素冲突
+const popup_window_id = 'wUkq6dYT-l1FNJ3Ne';
 
 function extensionFileRead(file, fun) {
     fetch(chrome.runtime.getURL(file))
@@ -50,48 +51,151 @@ function createMessageItem(className, text) {
 
 function cleanPopup() {
     // 防止有bug导致的没有清除所以清除的时候循环一下删除所有的
-    while (true) {
-        let popupObj = document.getElementById(popup_window_id);
-        if (popupObj) {
-            popupObj.parentNode.removeChild(popupObj);
-        } else {
-            break;
-        }
-    }
+    document.querySelectorAll(popup_window_id).forEach(function (popupObj) {
+        popupObj.parentNode.removeChild(popupObj);
+    });
+
 }
 
-function createPopupObj(x, y, innerHtml, init) {
-    // 先搞一个根节点，这个元素因为是最后放的所以应该是在body的最下边，稍后根据这个元素来定位
-    let popupParentObj = document.createElement('div');
-    popupParentObj.setAttribute('id', popup_window_id);
-    popupParentObj.style.position = 'relative';
-    document.body.appendChild(popupParentObj);
+let popupShadow = null;
 
-    let popupParentShadow = popupParentObj.attachShadow({ mode: 'closed' });
+window.addEventListener('message', function (event) {
+    console.log(event);
 
-    popupParentShadow.innerHTML = `
-<link rel="stylesheet" href="${chrome.runtime.getURL('../bootstrap-5.3.3/css/bootstrap.min.css')}">
-<link rel="stylesheet" href="${chrome.runtime.getURL('../css/style.css')}">
-<${popup_window_id}>
-</${popup_window_id}>`
-
-
-    let popupObj = popupParentShadow.querySelector(popup_window_id);
-    popupObj.style.visibility = 'hidden';
-    popupObj.innerHTML = innerHtml;
-
-
-    if (init) {
-        init(popupObj);
+    if (event.origin.indexOf(chrome.runtime.id) === -1) {
+        return;
+    }
+    if (event.data.action === 'resizePopupWindow') {
+        let popupObj = popupShadow.querySelector('#' + popup_window_id);
+    
+        console.log(popupObj);
+    
+        let popupWidth = event.data.width;
+        let popupHeight = event.data.height;
+    
+        popupObj.style.width = popupWidth + 'px';
+        popupObj.style.height = popupHeight + 'px';
+        
+        
+        popupObj.style.left = calcPopupPositionX(mousePositionX, popupWidth) + "px";
+        popupObj.style.top = calcPopupPositionY(mousePositionY, popupHeight) + "px";
+    
+        popupObj.style.visibility = 'visible';
+        return;
     }
 
-    setTimeout(() => {
-        let popupWidth = popupObj.offsetWidth;
-        let popupHeight = popupObj.offsetHeight;
-        popupObj.style.left = calcPopupPositionX(x, popupWidth) + "px";
-        popupObj.style.top = calcPopupPositionY(y, popupHeight, popupParentObj) + "px";
-        popupObj.style.visibility = 'visible';
-    }, 50);
+    if (event.data.action === 'navTo') {
+        let page = event.data.page;
+        // window.open(chrome.runtime.getURL(page));
+        showTranslateModal(mousePositionX, mousePositionY, '2132121231');
+        return;
+    }
+
+
+
+
+});
+
+
+
+function createPopupObj(x, y, src, init) {
+    // 先搞一个根节点，这个元素因为是最后放的所以应该是在body的最下边，稍后根据这个元素来定位
+    let popupParentObj = document.createElement(popup_window_id);
+    popupParentObj.style.position = 'relative';
+
+
+    let popupParentShadow = popupParentObj.attachShadow({ mode: 'closed' });
+    popupShadow = popupParentShadow;
+
+    const popupParentStyle = document.createElement('style');
+    popupParentStyle.textContent = `
+        :host {
+          all: initial;
+          contain: style layout size;
+        }
+
+        #wUkq6dYT-l1FNJ3Ne {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+            font-size: 16px;
+        }
+    `;
+
+    // popupParentShadow.appendChild(popupParentStyle);
+
+
+    popupParentShadow.appendChild(popupParentStyle);
+    let popupObj = document.createElement('div');
+    popupObj.setAttribute('id', popup_window_id);
+    // 先设置为全屏大小，等渲染完获取到宽高后再重新设置大小
+    popupObj.style.width = document.body.clientWidth + 'px';
+    popupObj.style.height = document.body.clientHeight + 'px';
+    popupObj.style.visibility = 'hidden';
+    popupParentShadow.appendChild(popupObj);
+    
+
+
+    popupObj.innerHTML = `
+<iframe id="${popup_window_id}" src="${chrome.runtime.getURL(src)}" style="width: 100%; height: 100%; border: none; overflow: hidden;"></iframe>
+    `;
+
+    // console.log(popupObj.querySelector('body'))
+
+    
+
+
+    // let popupWidth = popupObj.offsetWidth;
+    // let popupHeight = popupObj.offsetHeight;
+    // popupObj.style.left = calcPopupPositionX(x, popupWidth) + "px";
+    // popupObj.style.top = calcPopupPositionY(y, popupHeight, popupParentObj) + "px";
+
+
+    // window.addEventListener('message', function (event) {
+    //     console.log(event.data);
+    //     let popupWidth = event.data.width;
+    //     let popupHeight = event.data.height;
+
+    //     popupObj.style.width = popupWidth + 'px';
+    //     popupObj.style.height = popupHeight + 'px';
+        
+        
+    //     popupObj.style.left = calcPopupPositionX(x, popupWidth) + "px";
+    //     popupObj.style.top = calcPopupPositionY(y, popupHeight, popupParentObj) + "px";
+
+    //     popupObj.style.visibility = 'visible';
+
+
+    // }, {
+    //     once: true
+    // });
+
+    // 添加到文档并保护它
+    const root = document.documentElement;
+    root.appendChild(popupParentObj);
+    root.insertBefore(popupParentObj, root.firstChild);
+
+
+
+
+
+    // let popupObj = popupParentShadow.querySelector(popup_window_id);
+    // popupObj.style.visibility = 'hidden';
+    // popupObj.innerHTML = innerHtml;
+
+
+    // if (init) {
+    //     init(popupObj);
+    // }
+
+    // setTimeout(() => {
+    //     let popupWidth = popupObj.offsetWidth;
+    //     let popupHeight = popupObj.offsetHeight;
+    //     popupObj.style.left = calcPopupPositionX(x, popupWidth) + "px";
+    //     popupObj.style.top = calcPopupPositionY(y, popupHeight, popupParentObj) + "px";
+    //     popupObj.style.visibility = 'visible';
+    // }, 50);
 
 
     return popupParentShadow;
@@ -114,23 +218,27 @@ const mouseUpEventHandle = (event) => {
             mousePositionY = _mousePositionY;
 
             // 展示弹窗
-            let popupObj = createPopupObj(mousePositionX, mousePositionY, menuBtnHtml);
+            let popupObj = createPopupObj(mousePositionX, mousePositionY, 'index.html');
 
-
-            popupObj.querySelector('#btn--translate').addEventListener('click', function () {
-                showTranslateModal(mousePositionX, mousePositionY, selectedText);
-            });
-            popupObj.querySelector('#btn--chat').addEventListener('click', function () {
-                showChatModal(mousePositionX, mousePositionY, selectedText);
-            });
-            popupObj.querySelector('#btn--summarize').addEventListener('click', function () {
-                showSummarizeModal(mousePositionX, mousePositionY, selectedText);
-            });
-            popupObj.querySelector('#btn--setting').addEventListener('click', function () {
-                window.open(chrome.runtime.getURL('../pages/setting.html'));
+            // 保存选中的文本，方便后续使用
+            chrome.storage.session.set({ selectedText: selectedText }).then(() => {
+                console.log("selectedText was set");
             });
 
-            popupObj.querySelector('#btn--setting').setAttribute('href', chrome.runtime.getURL('../pages/setting.html'));
+            // popupObj.querySelector('#btn--translate').addEventListener('click', function () {
+            //     showTranslateModal(mousePositionX, mousePositionY, selectedText);
+            // });
+            // popupObj.querySelector('#btn--chat').addEventListener('click', function () {
+            //     showChatModal(mousePositionX, mousePositionY, selectedText);
+            // });
+            // popupObj.querySelector('#btn--summarize').addEventListener('click', function () {
+            //     showSummarizeModal(mousePositionX, mousePositionY, selectedText);
+            // });
+            // popupObj.querySelector('#btn--setting').addEventListener('click', function () {
+            //     window.open(chrome.runtime.getURL('../pages/setting.html'));
+            // });
+
+            // popupObj.querySelector('#btn--setting').setAttribute('href', chrome.runtime.getURL('../pages/setting.html'));
 
             popupObj.addEventListener('mouseup', function (event) {
                 event.stopPropagation(); //阻止冒泡
@@ -148,14 +256,14 @@ function showPopup(x, y, selectedText, init) {
 
     cleanPopup();
 
-    let popupObj = createPopupObj(x, y, chatWindowHtml, init);
+    let popupObj = createPopupObj(x, y, 'pages/chat.html', init);
 
 
 
     let selectedTextChatItemObj = createMessageItem('message-item-text-right', selectedText);
     // 有bug暂时先去掉
     // selectedTextChatItemObj.setAttribute('style', 'overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;');
-    popupObj.querySelector('#message-list').appendChild(selectedTextChatItemObj);
+    // popupObj.querySelector('#message-list').appendChild(selectedTextChatItemObj);
 
 
     // popupObj.querySelector('#chat-nav-close').addEventListener('click', function () {
@@ -176,6 +284,8 @@ function showChatModal(x, y, selectedText) {
         _popupObj.querySelector('.chat-nav-title').innerHTML = `<h3>${promptName}</h3>`;
     });
 
+    return;
+
     popupObj.querySelector('#chat-input-textarea').addEventListener('keydown', function (event) {
         if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
@@ -184,7 +294,7 @@ function showChatModal(x, y, selectedText) {
     });
 
     // 处理文本框自动增高
-    popupObj.querySelector('#chat-input-textarea').addEventListener('input', function() {
+    popupObj.querySelector('#chat-input-textarea').addEventListener('input', function () {
         this.style.height = 'auto';
         this.style.height = (this.scrollHeight) + 'px';
     });
@@ -395,6 +505,10 @@ function showSummarizeModal(x, y, selectedText) {
 function showPromptModal(x, y, selectedText, promptName, promptText) {
 
     let popupObj = showPopup(x, y, selectedText);
+    return;
+
+    
+
 
     popupObj.querySelector('.chat-nav-title').innerHTML = `<h3>${promptName}</h3>`;
 
@@ -544,21 +658,21 @@ function calcPopupPositionX(x, popupWidth) {
 
 }
 
-function calcPopupPositionY(y, popupHeight, popupParentObj) {
+function calcPopupPositionY(y, popupHeight) {
 
     // let popupParentObj = document.getElementsByTagName(popup_window_id)[0];
     // console.log("===>" + popupParentObj.offsetTop)
     // console.log("===>" + window.scrollY)
 
-    // 可视区域上边缘
-    let windowTop = -popupParentObj.offsetTop + window.scrollY;
-    // 可视区域下边缘
+    // 可视区域上边缘在整个页面高度中的位置 = 整个页面高度 - 滚动高度
+    let windowTop = window.scrollY;
+    // 可视区域下边缘在整个页面高度中的位置 = 上边缘位置 + 可视区域高度
     let windowBottom = windowTop + window.innerHeight;
     
 
     // 先根据父容器计算计算位置，这个位置是接下来弹窗的上边缘的中心位置
     // 因为是相对相对于页面最下边的位置，所以应该是个负值
-    let top = -popupParentObj.offsetTop + window.scrollY + y;
+    let top = windowTop + y;
 
     // 窗口在纵向的时候，和鼠标的位置偏移一段距离，否则非常容易误操作到弹窗
     let offsetY = 12;
@@ -574,5 +688,6 @@ function calcPopupPositionY(y, popupHeight, popupParentObj) {
         top = windowTop + offsetY;
     }
 
+    // 计算的偏移量应该是负值
     return top;
 }

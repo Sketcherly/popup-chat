@@ -22,13 +22,13 @@ let bZYtqtP9 = (function () {
             if (!result.serviceList) {
                 // do nothing
             } else {
-                serviceList = JSON.parse(result.serviceList);
+                serviceList = result.serviceList;
             }
     
     
             serviceList.push(item);
     
-            chrome.storage.local.set({ 'serviceList': JSON.stringify(serviceList) }).then(() => {
+            chrome.storage.local.set({ 'serviceList': serviceList }).then(() => {
                 console.log("Value is set");
             });
     
@@ -53,12 +53,12 @@ let bZYtqtP9 = (function () {
             if (!result.serviceList) {
                 // do nothing
             } else {
-                serviceList = JSON.parse(result.serviceList);
+                serviceList = result.serviceList;
             }
     
             serviceList.splice(index, 1);
     
-            chrome.storage.local.set({ 'serviceList': JSON.stringify(serviceList) }).then(() => {
+            chrome.storage.local.set({ 'serviceList': serviceList }).then(() => {
                 // console.log("Value is set");
             });
     
@@ -91,7 +91,7 @@ let bZYtqtP9 = (function () {
             if (!result.serviceList) {
                 // do nothing
             } else {
-                serviceList = JSON.parse(result.serviceList);
+                serviceList = result.serviceList;
             }
     
             // reloadServiceListHtml(serviceList);
@@ -154,7 +154,7 @@ let bZYtqtP9 = (function () {
             if (!result.serviceList) {
                 // do nothing
             } else {
-                serviceList = JSON.parse(result.serviceList);
+                serviceList = result.serviceList;
             }
     
             // reloadServiceListHtml(serviceList);
