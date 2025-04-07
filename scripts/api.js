@@ -2,18 +2,21 @@ class ServiceFactory {
     constructor() { }
 
     createInstance() {
-        return chrome.storage.local.get(["serviceList", 'serviceDefault'])
+        const serviceListKey = 'service-list';
+        const serviceDefaultKey = 'service-default';
+
+        return chrome.storage.local.get([serviceListKey, serviceDefaultKey])
             .then((result) => {
 
                 try {
-                    result.serviceDefault = parseInt(result.serviceDefault);
+                    result[serviceDefaultKey] = parseInt(result[serviceDefaultKey]);
                 } catch (error) {
-                    result.serviceDefault = null;
+                    result[serviceDefaultKey] = null;
                 }
 
-                let serviceDefault = parseInt(result.serviceDefault);
-                if (result.serviceList.length > 0 && serviceDefault < result.serviceList.length) {
-                    let serviceDefaultItem = result.serviceList[serviceDefault];
+                let serviceDefault = parseInt(result[serviceDefaultKey]);
+                if (result[serviceListKey].length > 0 && serviceDefault < result[serviceListKey].length) {
+                    let serviceDefaultItem = result[serviceListKey][serviceDefault];
                     if (serviceDefaultItem) {
                         return new API_PROVIDERS[serviceDefaultItem.type](serviceDefaultItem);
                     }
@@ -46,6 +49,8 @@ class OpenAI {
             "messages": messages
         };
 
+        let responseBody = '';
+
         function resolveStreamData(value) {
             const decoder = new TextDecoder();
             let responseMessageData = decoder.decode(value);
@@ -74,6 +79,8 @@ class OpenAI {
                     // scrollMessageList(popupObj);
                     // popupObj.querySelector('#message-list').scrollTo(0, popupObj.querySelector('#message-list').scrollHeight);
                     if (resolveText) {
+                        responseBody += content;
+                        
                         resolveText(content);
                     }
                 }
@@ -97,7 +104,7 @@ class OpenAI {
                 if (done) {
                     console.log('Stream finished');
                     if (resolveDone) {
-                        resolveDone();
+                        resolveDone(responseBody);
                     }
                     return;
                 }
@@ -114,7 +121,7 @@ class OpenAI {
         });
 
 
-        // chrome.storage.local.get(["serviceList", 'serviceDefault'])
+        // chrome.storage.local.get(['service-list', 'service-default'])
         //     .then(this.resolveServiceOptions)
         //     .then((serviceOptions) => );
     };

@@ -20,10 +20,10 @@ extensionFileRead('../pages/chat.html', function (data) {
     chatWindowHtml = data;
 });
 
-// 临时记录鼠标的位置
+// 临时记录鼠标的位置，这个随时跟随鼠标移动变化
 let _mousePositionX = 0;
 let _mousePositionY = 0;
-// 记录一下划词的时候的鼠标的位置
+// 记录一下划词的时候的鼠标的位置，跟上边的区别是划词结束之后就固定了，稍后使用最多的也是这个
 let mousePositionX = 0;
 let mousePositionY = 0;
 
@@ -37,17 +37,6 @@ document.addEventListener('mousemove', function (event) {
 
 });
 
-function createMessageItem(className, text) {
-    let messageItem = document.createElement('div');
-    messageItem.classList.add('message-item-text', className);
-    messageItem.innerHTML = text;
-    return messageItem;
-}
-
-
-
-
-
 
 function cleanPopup() {
     // 防止有bug导致的没有清除所以清除的时候循环一下删除所有的
@@ -60,7 +49,7 @@ function cleanPopup() {
 let popupShadow = null;
 
 window.addEventListener('message', function (event) {
-    console.log(event);
+    // console.log(event);
 
     if (event.origin.indexOf(chrome.runtime.id) === -1) {
         return;
@@ -68,7 +57,7 @@ window.addEventListener('message', function (event) {
     if (event.data.action === 'resizePopupWindow') {
         let popupObj = popupShadow.querySelector('#' + popup_window_id);
     
-        console.log(popupObj);
+        // console.log(popupObj);
     
         let popupWidth = event.data.width;
         let popupHeight = event.data.height;
@@ -86,20 +75,16 @@ window.addEventListener('message', function (event) {
 
     if (event.data.action === 'navTo') {
         let page = event.data.page;
-        // window.open(chrome.runtime.getURL(page));
-        showTranslateModal(mousePositionX, mousePositionY, '2132121231');
+        showPopup(mousePositionX, mousePositionY, page);
         return;
     }
-
-
-
 
 });
 
 
 
 function createPopupObj(x, y, src, init) {
-    // 先搞一个根节点，这个元素因为是最后放的所以应该是在body的最下边，稍后根据这个元素来定位
+    // 先搞一个根节点，这个元素因为是最后放的所以应该是在body的最上边，稍后根据这个元素来定位
     let popupParentObj = document.createElement(popup_window_id);
     popupParentObj.style.position = 'relative';
 
@@ -120,11 +105,11 @@ function createPopupObj(x, y, src, init) {
             left: 0;
             z-index: 9999;
             font-size: 16px;
+            overflow: hidden;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
     `;
-
-    // popupParentShadow.appendChild(popupParentStyle);
-
 
     popupParentShadow.appendChild(popupParentStyle);
     let popupObj = document.createElement('div');
@@ -141,62 +126,12 @@ function createPopupObj(x, y, src, init) {
 <iframe id="${popup_window_id}" src="${chrome.runtime.getURL(src)}" style="width: 100%; height: 100%; border: none; overflow: hidden;"></iframe>
     `;
 
-    // console.log(popupObj.querySelector('body'))
-
-    
-
-
-    // let popupWidth = popupObj.offsetWidth;
-    // let popupHeight = popupObj.offsetHeight;
-    // popupObj.style.left = calcPopupPositionX(x, popupWidth) + "px";
-    // popupObj.style.top = calcPopupPositionY(y, popupHeight, popupParentObj) + "px";
-
-
-    // window.addEventListener('message', function (event) {
-    //     console.log(event.data);
-    //     let popupWidth = event.data.width;
-    //     let popupHeight = event.data.height;
-
-    //     popupObj.style.width = popupWidth + 'px';
-    //     popupObj.style.height = popupHeight + 'px';
-        
-        
-    //     popupObj.style.left = calcPopupPositionX(x, popupWidth) + "px";
-    //     popupObj.style.top = calcPopupPositionY(y, popupHeight, popupParentObj) + "px";
-
-    //     popupObj.style.visibility = 'visible';
-
-
-    // }, {
-    //     once: true
-    // });
-
     // 添加到文档并保护它
     const root = document.documentElement;
     root.appendChild(popupParentObj);
+
+    // 放在文档最前边吧，反正也不显示，比较容易计算弹窗位置
     root.insertBefore(popupParentObj, root.firstChild);
-
-
-
-
-
-    // let popupObj = popupParentShadow.querySelector(popup_window_id);
-    // popupObj.style.visibility = 'hidden';
-    // popupObj.innerHTML = innerHtml;
-
-
-    // if (init) {
-    //     init(popupObj);
-    // }
-
-    // setTimeout(() => {
-    //     let popupWidth = popupObj.offsetWidth;
-    //     let popupHeight = popupObj.offsetHeight;
-    //     popupObj.style.left = calcPopupPositionX(x, popupWidth) + "px";
-    //     popupObj.style.top = calcPopupPositionY(y, popupHeight, popupParentObj) + "px";
-    //     popupObj.style.visibility = 'visible';
-    // }, 50);
-
 
     return popupParentShadow;
 }
@@ -218,27 +153,12 @@ const mouseUpEventHandle = (event) => {
             mousePositionY = _mousePositionY;
 
             // 展示弹窗
-            let popupObj = createPopupObj(mousePositionX, mousePositionY, 'index.html');
+            let popupObj = showPopup(mousePositionX, mousePositionY, 'index.html');
 
             // 保存选中的文本，方便后续使用
-            chrome.storage.session.set({ selectedText: selectedText }).then(() => {
+            chrome.storage.session.set({ 'selected-text': selectedText }).then(() => {
                 console.log("selectedText was set");
             });
-
-            // popupObj.querySelector('#btn--translate').addEventListener('click', function () {
-            //     showTranslateModal(mousePositionX, mousePositionY, selectedText);
-            // });
-            // popupObj.querySelector('#btn--chat').addEventListener('click', function () {
-            //     showChatModal(mousePositionX, mousePositionY, selectedText);
-            // });
-            // popupObj.querySelector('#btn--summarize').addEventListener('click', function () {
-            //     showSummarizeModal(mousePositionX, mousePositionY, selectedText);
-            // });
-            // popupObj.querySelector('#btn--setting').addEventListener('click', function () {
-            //     window.open(chrome.runtime.getURL('../pages/setting.html'));
-            // });
-
-            // popupObj.querySelector('#btn--setting').setAttribute('href', chrome.runtime.getURL('../pages/setting.html'));
 
             popupObj.addEventListener('mouseup', function (event) {
                 event.stopPropagation(); //阻止冒泡
@@ -252,19 +172,11 @@ const mouseUpEventHandle = (event) => {
 document.addEventListener('mouseup', mouseUpEventHandle);
 document.addEventListener('touchend', mouseUpEventHandle);
 
-function showPopup(x, y, selectedText, init) {
+function showPopup(x, y, page, init) {
 
     cleanPopup();
 
-    let popupObj = createPopupObj(x, y, 'pages/chat.html', init);
-
-
-
-    let selectedTextChatItemObj = createMessageItem('message-item-text-right', selectedText);
-    // 有bug暂时先去掉
-    // selectedTextChatItemObj.setAttribute('style', 'overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;');
-    // popupObj.querySelector('#message-list').appendChild(selectedTextChatItemObj);
-
+    let popupObj = createPopupObj(x, y, page, init);
 
     // popupObj.querySelector('#chat-nav-close').addEventListener('click', function () {
     //     cleanPopup();
@@ -275,365 +187,6 @@ function showPopup(x, y, selectedText, init) {
 
     return popupObj;
 }
-
-function showChatModal(x, y, selectedText) {
-    let promptName = '对话';
-
-    let popupObj = showPopup(x, y, selectedText, function (_popupObj) {
-        _popupObj.querySelector('#chat-input').style.display = 'block';
-        _popupObj.querySelector('.chat-nav-title').innerHTML = `<h3>${promptName}</h3>`;
-    });
-
-    return;
-
-    popupObj.querySelector('#chat-input-textarea').addEventListener('keydown', function (event) {
-        if (event.key === 'Enter' && !event.shiftKey) {
-            event.preventDefault();
-            popupObj.querySelector('#chat-input-send-btn').click();
-        }
-    });
-
-    // 处理文本框自动增高
-    popupObj.querySelector('#chat-input-textarea').addEventListener('input', function () {
-        this.style.height = 'auto';
-        this.style.height = (this.scrollHeight) + 'px';
-    });
-
-    popupObj.querySelector('#chat-input-send-btn').addEventListener('click', function () {
-        let inputText = popupObj.querySelector('#chat-input-textarea').value;
-        if (inputText.trim().length == 0) {
-            return;
-        }
-
-        let messageListObj = popupObj.querySelector('#message-list');
-
-        let selectedTextChatItemObj = createMessageItem('message-item-text-right', inputText);
-        messageListObj.appendChild(selectedTextChatItemObj);
-
-        let messages = [
-            {
-                "role": "system",
-                "content": "You are a helpful assistant..."
-            }
-        ];
-
-        for (let i = 0; i < messageListObj.children.length; i++) {
-            let item = messageListObj.children[i];
-            // console.log(item);
-
-            let messageItem = {
-                "role": "",
-                "content": ""
-            }
-
-            if (item.classList.contains('message-item-text-right')) {
-                messageItem.role = 'user';
-            } else if (item.classList.contains('message-item-text-left')) {
-                messageItem.role = 'assistant';
-            } else {
-                messageItem.role = 'system';
-            }
-
-            messageItem.content = item.innerText;
-
-            messages.push(messageItem);
-        }
-
-        chrome.storage.local.get(["serviceList", 'serviceDefault']).then((result) => {
-            if (!result.serviceList) {
-                // do nothing
-            } else {
-                serviceList = JSON.parse(result.serviceList);
-            }
-
-            try {
-                result.serviceDefault = parseInt(result.serviceDefault);
-            } catch (error) {
-                result.serviceDefault = null;
-            }
-
-            if (serviceList.length > 0 && result.serviceDefault !== null && result.serviceDefault < serviceList.length) {
-                let serviceDefaultItem = serviceList[result.serviceDefault];
-                if (serviceDefaultItem) {
-
-                    let serviceParam_url = serviceDefaultItem.host + 'chat/completions';
-                    let serviceParam_key = serviceDefaultItem.key;
-                    let serviceParam_model = serviceDefaultItem.modelName;
-
-
-
-                    // const url = 'https://openai-api-proxy.dongpo.li/v1/chat/completions';
-                    // const url = 'https://xai-api-proxy.dongpo.li/v1/chat/completions';
-
-                    let data = {
-                        // "model": "gpt-4o",
-                        // "model": "grok-2",
-                        "model": serviceParam_model,
-                        "stream": true,
-                        "messages": messages
-                    };
-
-
-
-                    let messageItemTextLoadingHtml = '<span class="message-item-text-loading">&nbsp;</span>';
-                    let responseMessageDom = createMessageItem('message-item-text-left', messageItemTextLoadingHtml);
-                    popupObj.querySelector('#message-list').appendChild(responseMessageDom);
-
-                    // 清空输入框
-                    let inputTextObj = popupObj.querySelector('#chat-input-textarea');
-                    inputTextObj.value = '';
-                    inputTextObj.style.height = '48px';
-
-                    scrollMessageList(popupObj);
-
-                    fetchChatMessage(serviceParam_url, serviceParam_key, data, popupObj, responseMessageDom);
-                }
-
-            }
-        });
-
-    });
-
-
-
-
-
-}
-
-function showTranslateModal(x, y, selectedText) {
-    let promptName = '翻译';
-    // let promptText = '"You are a highly skilled AI trained in language translation. I would like you to translate the text delimited by triple quotes into Simplified Chinese language. Only give me the output and nothing else. Do not wrap responses in quotes. """ ${input} """"';
-
-    /**
-     * # 精准网页翻译（仅输出目标语言）
-
-## 您的身份与专长
-您是一位跨文化交流专家级翻译大师，不仅精通多国语言的微妙表达，更深谙各语言文化背景和语境差异。您能在保留原文情感与意图的同时，创造如同目标语言母语者原创的流畅译文。
-
-## 翻译核心任务
-将{{from}}语言网页内容转化为完全自然的{{to}}语言，确保译文既忠实原意，又完全符合目标语言的表达习惯、文化背景和语境要求。
-
-## ⚠️ 输出规范（绝对遵守）
-**只输出译文本身**，不添加任何说明、注释、标记或原文。译文应读起来毫无翻译痕迹，如同目标语言原生内容。
-
-## 翻译质量标准
-1. **极致地道化**：使用目标语言母语者日常真实使用的表达，完全消除翻译腔
-2. **情感精准映射**：捕捉并完美重现原文的情感基调、语气变化和态度倾向
-3. **文化本土适应**：灵活运用目标语言特有的俚语、成语和文化表达方式
-4. **结构自然重组**：根据目标语言习惯重构句式和表达逻辑，而非生硬保留原文结构
-5. **意图优先传递**：理解原文深层意图，用最自然的目标语言方式表达核心信息
-
-## 针对中文翻译的精细指导
-当目标语言为中文时：
-- **口语化表达**：采用"爱不释手"、"压榨价值"等真实日常用语，避免书面化
-- **情感真实性**：以略微非正式的语气，自然传递原文的热情和真诚赞赏之情
-- **汉语特色修辞**：适当融入四字成语、歇后语和中文特有修辞手法
-- **中式语序重构**：彻底调整为符合中文思维的表达顺序，消除外语句法痕迹
-- **生活化措辞**：使用"真心好用"、"忍不住安利"等现代中国人日常社交表达
-
-## 上下文智能应用
-高效利用所提供的上下文信息：
-- {{title_prompt}}：理解内容主题和写作意图
-- {{summary_prompt}}：把握整体背景和核心信息
-- {{terms_prompt}}：确保专业术语准确统一翻译
-
-## 待翻译内容
-{{text}}
-
-【注意：请直接呈现完美译文，不要包含任何其他内容】
-     */
-
-    let promptText = `# 精准网页翻译（仅输出目标语言）
-
-## 您的身份与专长
-您是一位跨文化交流专家级翻译大师，不仅精通多国语言的微妙表达，更深谙各语言文化背景和语境差异。您能在保留原文情感与意图的同时，创造如同目标语言母语者原创的流畅译文。
-
-## 翻译核心任务
-将{{from}}语言网页内容转化为完全自然的{{to}}语言，确保译文既忠实原意，又完全符合目标语言的表达习惯、文化背景和语境要求。
-
-## ⚠️ 输出规范（绝对遵守）
-**只输出译文本身**，不添加任何说明、注释、标记或原文。译文应读起来毫无翻译痕迹，如同目标语言原生内容。
-
-## 翻译质量标准
-1. **极致地道化**：使用目标语言母语者日常真实使用的表达，完全消除翻译腔
-2. **情感精准映射**：捕捉并完美重现原文的情感基调、语气变化和态度倾向
-3. **文化本土适应**：灵活运用目标语言特有的俚语、成语和文化表达方式
-4. **结构自然重组**：根据目标语言习惯重构句式和表达逻辑，而非生硬保留原文结构
-5. **意图优先传递**：理解原文深层意图，用最自然的目标语言方式表达核心信息
-
-## 针对中文翻译的精细指导
-当目标语言为中文时：
-- **口语化表达**：采用"爱不释手"、"压榨价值"等真实日常用语，避免书面化
-- **情感真实性**：以略微非正式的语气，自然传递原文的热情和真诚赞赏之情
-- **汉语特色修辞**：适当融入四字成语、歇后语和中文特有修辞手法
-- **中式语序重构**：彻底调整为符合中文思维的表达顺序，消除外语句法痕迹
-- **生活化措辞**：使用"真心好用"、"忍不住安利"等现代中国人日常社交表达
-
-## 待翻译内容
-{{text}}
-
-【注意：请直接呈现完美译文，不要包含任何其他内容】`;
-
-    let from = '英文';
-    let to = '简体中文';
-    let text = selectedText;
-    promptText = promptText.replace('{{from}}', from);
-    promptText = promptText.replace('{{to}}', to);
-    promptText = promptText.replace('{{text}}', text);
-
-
-    showPromptModal(x, y, selectedText, promptName, promptText);
-}
-
-function showSummarizeModal(x, y, selectedText) {
-
-    let promptName = '总结';
-    let promptText = `You are a highly skilled AI trained in language comprehension and summarization. I would like you to read the text delimited by triple quotes and summarize it into a concise abstract paragraph. Aim to retain the most important points, providing a coherent and readable summary that could help a person understand the main points of the discussion without needing to read the entire text. Please avoid unnecessary details or tangential points. Only give me the output and nothing else. Do not wrap responses in quotes. Respond in the Simplified Chinese language. """ ${selectedText} """`;
-
-    showPromptModal(x, y, selectedText, promptName, promptText);
-
-}
-
-/**
- * 
- * @param {*} x 选中的时候，鼠标的位置，x轴
- * @param {*} y 选中的时候，鼠标的位置，y轴
- * @param {*} selectedText 选中的文本
- * @param {*} promptName 提示词的名称，显示在弹窗左上角标题的位置
- * @param {*} promptText 提示词
- */
-function showPromptModal(x, y, selectedText, promptName, promptText) {
-
-    let popupObj = showPopup(x, y, selectedText);
-    return;
-
-    
-
-
-    popupObj.querySelector('.chat-nav-title').innerHTML = `<h3>${promptName}</h3>`;
-
-    chrome.storage.local.get(["serviceList", 'serviceDefault']).then((result) => {
-        if (!result.serviceList) {
-            // do nothing
-        } else {
-            serviceList = JSON.parse(result.serviceList);
-        }
-
-        try {
-            result.serviceDefault = parseInt(result.serviceDefault);
-        } catch (error) {
-            result.serviceDefault = null;
-        }
-
-        if (serviceList.length > 0 && result.serviceDefault !== null && result.serviceDefault < serviceList.length) {
-            let serviceDefaultItem = serviceList[result.serviceDefault];
-            if (serviceDefaultItem) {
-
-                let serviceParam_url = serviceDefaultItem.host + 'chat/completions';
-                let serviceParam_key = serviceDefaultItem.key;
-                let serviceParam_model = serviceDefaultItem.modelName;
-
-
-
-                let data = {
-                    "model": serviceParam_model,
-                    "stream": true,
-                    "messages": [
-                        {
-                            "role": "user",
-                            "content": promptText
-                        }
-                    ]
-                };
-
-                let messageItemTextLoadingHtml = '<span class="message-item-text-loading">&nbsp;</span>';
-                let responseMessageDom = createMessageItem('message-item-text-left', messageItemTextLoadingHtml);
-                popupObj.querySelector('#message-list').appendChild(responseMessageDom);
-
-                scrollMessageList(popupObj);
-
-                fetchChatMessage(serviceParam_url, serviceParam_key, data, popupObj, responseMessageDom);
-            }
-
-        }
-    });
-
-}
-
-function scrollMessageList(popupObj) {
-    let messageListObj = popupObj.querySelector('#message-list');
-    messageListObj.scrollTop = messageListObj.scrollHeight;
-    // messageListObj.scrollTo(0, messageListObj.scrollHeight);
-}
-
-
-function fetchChatMessage(url, key, data, popupObj, responseMessageDom) {
-    let messageItemTextLoadingObj = responseMessageDom.querySelector('.message-item-text-loading');
-
-    // fetch(url, {
-    fetch(url, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + key,
-        },
-        body: JSON.stringify(data)
-    })
-        .then(response => {
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-
-
-            // done 为数据是否接收完成 boolean 值
-            // value 为接收到的数据, Uint8Array 格式
-            return reader.read().then(function processMessage({ done, value }) {
-
-                let responseMessageData = decoder.decode(value);
-
-                let responseMessageStart = 'data: ';
-                let responseMessageEnd = '[DONE]';
-
-                let responseMessageLines = responseMessageData.split('\n');
-
-                for (let i = 0; i < responseMessageLines.length; i++) {
-                    let responseMessageLine = responseMessageLines[i];
-
-                    let responseMessage = responseMessageLine.substring(responseMessageStart.length);
-
-                    if (responseMessage.startsWith(responseMessageEnd)) {
-                        messageItemTextLoadingObj.remove();
-                        return;
-                    }
-
-                    if (responseMessage.trim().length === 0) {
-                        // messageItemTextLoadingObj.parentElement.insertBefore(document.createTextNode('\n'), messageItemTextLoadingObj);
-                        continue;
-                    }
-
-                    // console.log(responseMessage);
-
-                    let responseDataObj = JSON.parse(responseMessage);
-                    // console.log(responseDataObj);
-
-                    let content = responseDataObj.choices[0].delta.content;
-                    if (!!content) {
-                        // content = content.replace(/(?:\r\n|\r|\n)/g, '<br>');
-                        messageItemTextLoadingObj.parentElement.insertBefore(document.createTextNode(content), messageItemTextLoadingObj);
-                        // responseMessageDom.querySelector('.message-item-text').appendChild(document.createTextNode(content));
-                        scrollMessageList(popupObj);
-
-                        popupObj.querySelector('#message-list').scrollTo(0, popupObj.querySelector('#message-list').scrollHeight);
-
-                    }
-
-
-                }
-
-                return reader.read().then(processMessage);
-            });
-        });
-}
-
 
 function calcPopupPositionX(x, popupWidth) {
 

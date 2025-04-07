@@ -13,7 +13,7 @@
             width: document.body.children[0].offsetWidth,
             height: document.body.children[0].offsetHeight,
         }, '*');
-    }, 2);
+    }, 5);
 
 
 
@@ -23,18 +23,22 @@
 document.getElementById('btn--translate').addEventListener('click', function () {
     window.parent.postMessage({
         action: 'navTo',
-        page: 'pages/chat.html',
-        // width: document.body.children[0].offsetWidth,
-        // height: document.body.children[0].offsetHeight,
+        page: 'pages/chat.html?act=' + 'translate',
     }, '*');
 });
 
 document.getElementById('btn--summarize').addEventListener('click', function () {
-    window.location.href = 'pages/chat.html';
+    window.parent.postMessage({
+        action: 'navTo',
+        page: 'pages/chat.html?act=' + 'summarize',
+    }, '*');
 });
 
 document.getElementById('btn--chat').addEventListener('click', function () {
-    window.location.href = 'pages/chat.html';
+    window.parent.postMessage({
+        action: 'navTo',
+        page: 'pages/chat.html?act=' + 'chat',
+    }, '*');
 });
 
 document.getElementById('btn--setting').addEventListener('click', function () {

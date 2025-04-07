@@ -1,364 +1,281 @@
+(function () {
 
-let bZYtqtP9 = (function () {
+    const serviceListKey = 'service-list';
+    const serviceDefaultKey = 'service-default';
 
-    function save() {
-        let id = document.getElementById('bZYtqtP9__form--id').value;
-        let name = document.getElementById('bZYtqtP9__form--name').value;
-        let type = document.getElementById('bZYtqtP9__form--type').value;
-        let key = document.getElementById('bZYtqtP9__form--key').value;
-        let host = document.getElementById('bZYtqtP9__form--host').value;
-        let modelName = document.getElementById('bZYtqtP9__form--modelName').value;
-    
+    function getServiceList() {
+        return chrome.storage.local.get([serviceListKey, serviceDefaultKey]);
+    }
+
+    function append(item) {
+
+        getServiceList()
+            .then((result) => {
+                let serviceList = [];
+                if (!result[serviceListKey]) {
+                    // do nothing
+                } else {
+                    serviceList = result[serviceListKey];
+                }
+
+
+                serviceList.push(item);
+
+                let obj = {};
+                obj[serviceListKey] = serviceList;
+
+                chrome.storage.local.set(obj).then(() => {
+                    console.log("Value is set");
+                    reloadServiceListTable();
+                });
+
+                // reloadServiceList();
+            });
+
+    }
+
+    function change(idx, item) {
+        createStorageGetInstance().then((result) => {
+            let serviceList = [];
+            if (!result[serviceListKey]) {
+                // do nothing
+            } else {
+                serviceList = result[serviceListKey];
+            }
+
+            serviceList[idx] = item;
+
+            let obj = {};
+            obj[serviceListKey] = serviceList;
+
+            chrome.storage.local.set(obj).then(() => {
+                console.log("Value is set");
+                reloadServiceListTable();
+            });
+
+            // reloadServiceList();
+        });
+
+    }
+
+    function serviceListSaveBtnClickHandler() {
+        let tr = this.parentNode.parentNode.parentNode;
+
+        let name = tr.querySelector('input[name="name"]').value;
+        // let modelType = tr.querySelector('input[name="modelType"]').value;
+        let host = tr.querySelector('input[name="host"]').value;
+        let key = tr.querySelector('input[name="key"]').value;
+        let modelName = tr.querySelector('input[name="modelName"]').value;
         let item = {
             name: name,
-            type: type,
+            type: '0',
             key: key,
             host: host,
             modelName: modelName
         };
-    
-        let serviceList = [];
-        chrome.storage.local.get(["serviceList"]).then((result) => {
-            if (!result.serviceList) {
-                // do nothing
-            } else {
-                serviceList = result.serviceList;
-            }
-    
-    
-            serviceList.push(item);
-    
-            chrome.storage.local.set({ 'serviceList': serviceList }).then(() => {
-                console.log("Value is set");
-            });
-    
-            reloadServiceList();
+
+        let radio = tr.querySelector('input[type="radio"]');
+        if (radio) {
+            // 修改
+            let idx = radio.value;
+            change(idx, item);
+        } else {
+            // 添加
+            append(item);
+        }
+
+    }
+
+    function showAddBtn() {
+        const html = `
+        <td colspan="7">
+            <button type="button" class="btn btn-primary btn-sm" id="btn--add">添加</button>
+        </td>
+        `;
+        const serviceListTable = document.getElementById('service-list-table');
+        const tr = document.createElement('tr');
+        tr.innerHTML = html;
+        serviceListTable.appendChild(tr);
+
+        const addBtn = tr.querySelector('#btn--add');
+        addBtn.addEventListener('click', function () {
+            // 添加之前先删除添加按钮
+            tr.remove();
+            showAddForm();
         });
-    
+
+    }
+
+    function showAddForm() {
+        const serviceListTable = document.getElementById('service-list-table');
+
+        const html = `
+        <th scope="row">
+        </th>
+        <td><input type="text" class="form-control" name="name" value=""></td>
+        <td>OpenAI API</td>
+        <td><input type="text" class="form-control" name="host" value=""></td>
+        <td><input type="password" class="form-control" name="key" value=""></td>
+        <td><input type="text" class="form-control" name="modelName" value=""></td>
+        <td>
+            <div class="btn-group btn-group-sm">
+                <button type="button" class="btn btn-primary" id="btn--save">保存</button>
+                <button type="button" class="btn btn-primary" id="btn--cancel">取消</button>
+            </div>
+        </td>
+        `;
+        let tr = document.createElement('tr');
+        tr.innerHTML = html;
+
+        serviceListTable.appendChild(tr);
+
+        tr.querySelector('#btn--save').addEventListener('click', serviceListSaveBtnClickHandler);
+
+        tr.querySelector('#btn--cancel').addEventListener('click', function () {
+            tr.remove();
+            showAddBtn();
+        });
+
     }
 
 
     (function init() {
-        document.getElementById('bZYtqtP9__form--submit').addEventListener('click', save);
-    
-        // reloadServiceList();
-
         reloadServiceListTable();
     })();
 
 
     function serviceListDelete(index) {
+
         let serviceList = [];
-        chrome.storage.local.get(["serviceList", 'serviceDefault']).then((result) => {
-            if (!result.serviceList) {
+        chrome.storage.local.get([serviceListKey, serviceDefaultKey]).then((result) => {
+            if (!result[serviceListKey]) {
                 // do nothing
             } else {
-                serviceList = result.serviceList;
+                serviceList = result[serviceListKey];
             }
-    
+
             serviceList.splice(index, 1);
-    
-            chrome.storage.local.set({ 'serviceList': serviceList }).then(() => {
+
+            let obj = {};
+            obj[serviceListKey] = serviceList;
+            chrome.storage.local.set(obj).then(() => {
                 // console.log("Value is set");
+                reloadServiceListTable();
             });
-    
+
             try {
-                result.serviceDefault = parseInt(result.serviceDefault);
+                result[serviceDefaultKey] = parseInt(result[serviceDefaultKey]);
             } catch (error) {
-                result.serviceDefault = null;
+                result[serviceDefaultKey] = null;
             }
-    
-            if (result.serviceDefault == index) {
-                chrome.storage.local.set({ 'serviceDefault': null }).then(() => {
+
+            if (result[serviceDefaultKey] == index) {
+                let obj = {};
+                obj[serviceDefaultKey] = null;
+                chrome.storage.local.set(obj).then(() => {
                     // console.log("Value is set");
+                    reloadServiceListTable();
                 });
             }
-            if (result.serviceDefault > index) {
-                chrome.storage.local.set({ 'serviceDefault': result.serviceDefault - 1 }).then(() => {
+            if (result[serviceDefaultKey] > index) {
+                let obj = {};
+                obj[serviceDefaultKey] = result[serviceDefaultKey] - 1;
+                chrome.storage.local.set(obj).then(() => {
                     // console.log("Value is set");
+                    reloadServiceListTable();
                 });
             }
-    
-    
-            reloadServiceList();
+
+
+            reloadServiceListTable();
         });
-    }
-    
-    function reloadServiceList() {
-    
-        let serviceList = [];
-        chrome.storage.local.get(["serviceList", 'serviceDefault']).then((result) => {
-            if (!result.serviceList) {
-                // do nothing
-            } else {
-                serviceList = result.serviceList;
-            }
-    
-            // reloadServiceListHtml(serviceList);
-            let serviceListObj = document.getElementById('bZYtqtP9__service-list');
-            serviceListObj.innerHTML = '';
-    
-            for (let i = 0; i < serviceList.length; i++) {
-                let item = serviceList[i];
-                let serviceItem = document.createElement('li');
-                serviceItem.setAttribute('class', 'list-group-item');
-    
-                let checked = '';
-                if (result.serviceDefault == i) {
-                    checked = ' checked';
-                }
-    
-                let serviceItemHtml = '';
-                serviceItemHtml += `<input class="form-check-input me-1" type="radio" name="bZYtqtP9__form--default" value="${i}" id="bZYtqtP9__form--default-${i}"${checked}>`;
-                serviceItemHtml += `<label class="form-check-label" for="bZYtqtP9__form--default-${i}">${item.name}</label>`;
-                serviceItemHtml += `<button type="button" class="btn btn-danger btn-del" value="${i}">移除</button>`;
-                serviceItem.innerHTML = serviceItemHtml;
-                serviceListObj.appendChild(serviceItem);
-            }
-    
-            // console.log(serviceListObj);
-    
-            let redioList = document.querySelector('#bZYtqtP9__service-list').querySelectorAll('input[type="radio"]');
-            // console.log(redioList);
-            for (let i = 0; i < redioList.length; i++) {
-                redioList[i].addEventListener('change', function (element) {
-                    chrome.storage.local.set({ 'serviceDefault': element.target.value }).then(() => {
-                    });
-                });
-            }
-    
-            let delList = document.querySelector('#bZYtqtP9__service-list').querySelectorAll('.btn-del');
-            // console.log(delList);
-            for (let i = 0; i < delList.length; i++) {
-                delList[i].addEventListener('click', function (idx) {
-                    serviceListDelete(i);
-                });
-            }
-    
-    
-            // .forEach((element) => {
-            //     element.addEventListener('click', function () {
-            //         console.log('click');
-            //         console.log(element.value);
-            //     });
-            // });
-        });
-    
-    
     }
 
     function reloadServiceListTable() {
-    
-        let serviceList = [];
-        chrome.storage.local.get(["serviceList", 'serviceDefault']).then((result) => {
-            if (!result.serviceList) {
-                // do nothing
-            } else {
-                serviceList = result.serviceList;
-            }
-    
-            // reloadServiceListHtml(serviceList);
-            let serviceListObj = document.getElementById('bZYtqtP9__service-list-table');
-            serviceListObj.innerHTML = '';
-    
-            for (let i = 0; i < serviceList.length; i++) {
-                let item = serviceList[i];
-                let serviceItem = document.createElement('tr');
-    
-                let checked = '';
-                if (result.serviceDefault == i) {
-                    checked = ' checked';
+
+        getServiceList()
+        .then((result) => {
+            let serviceList = [];
+            if (!result[serviceListKey]) {
+                    // do nothing
+                } else {
+                    serviceList = result[serviceListKey];
                 }
 
-    
-                let serviceItemHtml = '';
-                serviceItemHtml += `<td>
-                    <input class="form-check-input me-1" type="radio" name="bZYtqtP9__form--default" value="${i}" id="bZYtqtP9__form--default-${i}"${checked}>
-                    <label class="form-check-label" for="bZYtqtP9__form--default-${i}">选中设为默认</label>
+                // reloadServiceListHtml(serviceList);
+                let serviceListObj = document.getElementById('service-list-table');
+                serviceListObj.innerHTML = '';
+
+                for (let i = 0; i < serviceList.length; i++) {
+                    let item = serviceList[i];
+                    let serviceItem = document.createElement('tr');
+
+                    let checked = '';
+                    if (result[serviceDefaultKey] == i) {
+                        checked = ' checked';
+                    }
+
+
+                    let serviceItemHtml = '';
+                    serviceItemHtml += `<td>
+                    <input class="form-check-input me-1" type="radio" name="form--default" value="${i}" id="form--default-${i}"${checked}>
+                    <label class="form-check-label" for="form--default-${i}">选中设为默认</label>
                 </td>`;
-                serviceItemHtml += `<td><input type="text" class="form-control" id="bZYtqtP9__form--name" value="${item.name}"></td>`;
-                serviceItemHtml += `<td><input type="text" class="form-control" id="bZYtqtP9__form--type" value="${item.type}"></td>`;
-                serviceItemHtml += `<td><input type="text" class="form-control" id="bZYtqtP9__form--host" value="${item.host}"></td>`;
-                serviceItemHtml += `<td><input type="password" class="form-control" id="bZYtqtP9__form--key" value="${item.key}"></td>`;
-                serviceItemHtml += `<td><input type="text" class="form-control" id="bZYtqtP9__form--modelName" value="${item.modelName}"></td>`;
-                serviceItemHtml += `<td>
+                    serviceItemHtml += `<td><input type="text" class="form-control" id="form--name" value="${item.name}"></td>`;
+                    serviceItemHtml += `<td><input type="text" class="form-control" id="form--type" value="${item.type}"></td>`;
+                    serviceItemHtml += `<td><input type="text" class="form-control" id="form--host" value="${item.host}"></td>`;
+                    serviceItemHtml += `<td><input type="password" class="form-control" id="form--key" value="${item.key}"></td>`;
+                    serviceItemHtml += `<td><input type="text" class="form-control" id="form--modelName" value="${item.modelName}"></td>`;
+                    serviceItemHtml += `<td>
                     <div class="btn-group btn-group-sm">
                         <button type="button" class="btn btn-primary" id="btn--save">保存</button>
                         <button type="button" class="btn btn-primary" id="btn--view">查看</button>
                         <button type="button" class="btn btn-danger" id="btn--del">删除</button>
                     </div>
                 </td>`;
-                serviceItem.innerHTML = serviceItemHtml;
-                serviceListObj.appendChild(serviceItem);
-            }
-    
-            // console.log(serviceListObj);
-    
-            let redioList = document.querySelector('#bZYtqtP9__service-list-table').querySelectorAll('input[type="radio"]');
-            // console.log(redioList);
-            for (let i = 0; i < redioList.length; i++) {
-                redioList[i].addEventListener('change', function (element) {
-                    chrome.storage.local.set({ 'serviceDefault': element.target.value }).then(() => {
-                    });
-                });
-            }
-    
-            let delList = document.querySelector('#bZYtqtP9__service-list-table').querySelectorAll('.btn-del');
-            // console.log(delList);
-            for (let i = 0; i < delList.length; i++) {
-                delList[i].addEventListener('click', function (idx) {
-                    serviceListDelete(i);
-                });
-            }
-    
-    
-            // .forEach((element) => {
-            //     element.addEventListener('click', function () {
-            //         console.log('click');
-            //         console.log(element.value);
-            //     });
-            // });
-        });
-    
-    
+                    serviceItem.innerHTML = serviceItemHtml;
+                    serviceListObj.appendChild(serviceItem);
+                }
+
+                // console.log(serviceListObj);
+
+                let trs = serviceListObj.querySelectorAll('tr');
+                for(let i = 0; i < trs.length; i++) {
+                    let radio = trs[i].querySelector('input[type="radio"]');
+                    if (radio) {
+                        radio.addEventListener('change', function (element) {
+                            let obj = {};
+                            obj[serviceDefaultKey] = element.target.value;
+                            chrome.storage.local.set(obj).then(() => {
+                            });
+                        });
+                    }
+
+                    let saveBtn = trs[i].querySelector('#btn--save');
+                    if (saveBtn) {
+                        saveBtn.addEventListener('click', serviceListSaveBtnClickHandler);
+                    }
+
+                    let viewBtn = trs[i].querySelector('#btn--view');
+                    // if (viewBtn) {
+                    //     viewBtn.addEventListener('click', function () {
+                    //         let item = serviceList[i];
+                    //         alert(JSON.stringify(item));
+                    //     });
+                    // }
+
+                    let delBtn = trs[i].querySelector('#btn--del');
+                    if (delBtn) {
+                        delBtn.addEventListener('click', function () {
+                            serviceListDelete(i);
+                        });
+                    }
+                }
+
+                showAddBtn();
+            });
+
+
     }
 
 })();
-
-
-
-// function bZYtqtP9__save() {
-//     let id = document.getElementById('bZYtqtP9__form--id').value;
-//     let name = document.getElementById('bZYtqtP9__form--name').value;
-//     let type = document.getElementById('bZYtqtP9__form--type').value;
-//     let key = document.getElementById('bZYtqtP9__form--key').value;
-//     let host = document.getElementById('bZYtqtP9__form--host').value;
-//     let modelName = document.getElementById('bZYtqtP9__form--modelName').value;
-
-//     let item = {
-//         name: name,
-//         type: type,
-//         key: key,
-//         host: host,
-//         modelName: modelName
-//     };
-
-//     let serviceList = [];
-//     chrome.storage.local.get(["serviceList"]).then((result) => {
-//         if (!result.serviceList) {
-//             // do nothing
-//         } else {
-//             serviceList = JSON.parse(result.serviceList);
-//         }
-
-
-//         serviceList.push(item);
-
-//         chrome.storage.local.set({ 'serviceList': JSON.stringify(serviceList) }).then(() => {
-//             console.log("Value is set");
-//         });
-
-//         reloadServiceList();
-//     });
-
-// }
-
-// function serviceListDelete(index) {
-//     let serviceList = [];
-//     chrome.storage.local.get(["serviceList", 'serviceDefault']).then((result) => {
-//         if (!result.serviceList) {
-//             // do nothing
-//         } else {
-//             serviceList = JSON.parse(result.serviceList);
-//         }
-
-//         serviceList.splice(index, 1);
-
-//         chrome.storage.local.set({ 'serviceList': JSON.stringify(serviceList) }).then(() => {
-//             // console.log("Value is set");
-//         });
-
-//         try {
-//             result.serviceDefault = parseInt(result.serviceDefault);
-//         } catch (error) {
-//             result.serviceDefault = null;
-//         }
-
-//         if (result.serviceDefault == index) {
-//             chrome.storage.local.set({ 'serviceDefault': null }).then(() => {
-//                 // console.log("Value is set");
-//             });
-//         }
-//         if (result.serviceDefault > index) {
-//             chrome.storage.local.set({ 'serviceDefault': result.serviceDefault - 1 }).then(() => {
-//                 // console.log("Value is set");
-//             });
-//         }
-
-
-//         reloadServiceList();
-//     });
-// }
-
-// function reloadServiceList() {
-
-//     let serviceList = [];
-//     chrome.storage.local.get(["serviceList", 'serviceDefault']).then((result) => {
-//         if (!result.serviceList) {
-//             // do nothing
-//         } else {
-//             serviceList = JSON.parse(result.serviceList);
-//         }
-
-//         // reloadServiceListHtml(serviceList);
-//         let serviceListObj = document.getElementById('bZYtqtP9__service-list');
-//         serviceListObj.innerHTML = '';
-
-//         for (let i = 0; i < serviceList.length; i++) {
-//             let item = serviceList[i];
-//             let serviceItem = document.createElement('li');
-//             serviceItem.setAttribute('class', 'list-group-item');
-
-//             let checked = '';
-//             if (result.serviceDefault == i) {
-//                 checked = ' checked';
-//             }
-
-//             let serviceItemHtml = '';
-//             serviceItemHtml += `<input class="form-check-input me-1" type="radio" name="bZYtqtP9__form--default" value="${i}" id="bZYtqtP9__form--default-${i}"${checked}>`;
-//             serviceItemHtml += `<label class="form-check-label" for="bZYtqtP9__form--default-${i}">${item.name}</label>`;
-//             serviceItemHtml += `<button type="button" class="btn btn-danger btn-del" value="${i}">移除</button>`;
-//             serviceItem.innerHTML = serviceItemHtml;
-//             serviceListObj.appendChild(serviceItem);
-//         }
-
-//         // console.log(serviceListObj);
-
-//         let redioList = document.querySelector('#bZYtqtP9__service-list').querySelectorAll('input[type="radio"]');
-//         console.log(redioList);
-//         for (let i = 0; i < redioList.length; i++) {
-//             redioList[i].addEventListener('change', function (element) {
-//                 chrome.storage.local.set({ 'serviceDefault': element.target.value }).then(() => {
-//                 });
-//             });
-//         }
-
-//         let delList = document.querySelector('#bZYtqtP9__service-list').querySelectorAll('.btn-del');
-//         console.log(delList);
-//         for (let i = 0; i < delList.length; i++) {
-//             delList[i].addEventListener('click', function (idx) {
-//                 serviceListDelete(i);
-//             });
-//         }
-
-
-//         // .forEach((element) => {
-//         //     element.addEventListener('click', function () {
-//         //         console.log('click');
-//         //         console.log(element.value);
-//         //     });
-//         // });
-//     });
-
-
-// }

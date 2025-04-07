@@ -15,80 +15,6 @@
     <div class="container">
 
 
-        <form>
-            <div style="display: none;">
-                <input type="text" name="" id="bZYtqtP9__form--id">
-            </div>
-            <div class="mb-3 row">
-                <label for="bZYtqtP9__form--name" class="col-sm-2 col-form-label">名称</label>
-                <div class="col-sm-10">
-                    <input type="text" class="form-control" id="bZYtqtP9__form--name">
-                </div>
-            </div>
-            <div class="mb-3 row">
-                <label for="bZYtqtP9__form--type" class="col-sm-2 col-form-label">接口类型</label>
-                <div class="col-sm-10">
-                    <select class="form-select" id="bZYtqtP9__form--type">
-                        <option selected value="0">OpenAI API</option>
-                    </select>
-                </div>
-            </div>
-            <div class="mb-3 row">
-                <label for="bZYtqtP9__form--key" class="col-sm-2 col-form-label">Key</label>
-                <div class="col-sm-10">
-                    <input type="password" class="form-control" id="bZYtqtP9__form--key">
-                </div>
-            </div>
-            <div class="mb-3 row">
-                <label for="bZYtqtP9__form--host" class="col-sm-2 col-form-label">接口地址</label>
-                <div class="col-sm-10">
-                    <input type="text" class="form-control" id="bZYtqtP9__form--host">
-                </div>
-            </div>
-            <div class="mb-3 row">
-                <label for="bZYtqtP9__form--modelName" class="col-sm-2 col-form-label">模型名称</label>
-                <div class="col-sm-10">
-                    <input type="text" class="form-control" id="bZYtqtP9__form--modelName">
-                </div>
-            </div>
-            <button type="button" id="bZYtqtP9__form--submit" class="btn btn-primary">保存</button>
-        </form>
-
-        <!-- <form>
-            <div class="mb-3 row">
-                <label for="bZYtqtP9__form--default" class="col-sm-2 col-form-label">接口类型</label>
-                <div class="col-sm-10">
-                    <select class="form-select" id="bZYtqtP9__form--default">
-                        <option selected value="0">OpenAI API</option>
-                    </select>
-                </div>
-            </div>
-        </form> -->
-
-
-        <ol class="list-group list-group-numbered" id="bZYtqtP9__service-list">
-            <!-- <li class="list-group-item d-flex justify-content-between align-items-start">
-                <div class="ms-2 me-auto">
-                    <div class="fw-bold">Subheading</div>
-                    Content for list item
-                </div>
-            </li>
-            <li class="list-group-item d-flex justify-content-between align-items-start">
-                <div class="ms-2 me-auto">
-                    <div class="fw-bold">Subheading</div>
-                    Content for list item
-                </div>
-                <span class="badge text-bg-primary rounded-pill">14</span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between align-items-start">
-                <div class="ms-2 me-auto">
-                    <div class="fw-bold">Subheading</div>
-                    Content for list item
-                </div>
-                <span class="badge text-bg-primary rounded-pill">14</span>
-            </li> -->
-        </ol>
-
         <table class="table table-striped">
             <thead>
                 <tr>
@@ -101,24 +27,8 @@
                     <th scope="col" width="155"></th>
                 </tr>
             </thead>
-            <tbody id="bZYtqtP9__service-list-table">
-                <!-- <tr>
-                    <th scope="row">
-                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" checked>
-                    </th>
-                    <td>OpenAI</td>
-                    <td>OpenAI API</td>
-                    <td><input type="text" class="form-control" name="host" value="https://xai-api-proxy.dongpo.li"></td>
-                    <td><input type="password" class="form-control" name="key" value="xai-1rxixPeiWhcT3lUDuvpfUBg8DiBqTUIx2R981XY3Yw9OmRG7couvX9MPLk9u1OqZSNy2aDQJZmIEN0QO"></td>
-                    <td><input type="text" class="form-control" name="model" value="grok-2"></td>
-                    <td>
-                        <div class="btn-group btn-group-sm">
-                            <button type="button" class="btn btn-primary" id="btn--save">保存</button>
-                            <button type="button" class="btn btn-primary" id="btn--view">查看</button>
-                            <button type="button" class="btn btn-primary" id="btn--del">删除</button>
-                        </div>
-                    </td>
-                </tr> -->
+            <tbody id="service-list-table">
+                
                 <!-- <tr>
                     <th scope="row">1</th>
                     <td>Mark</td>
@@ -128,6 +38,8 @@
                     <td>@mdo</td>
                 </tr> -->
             </tbody>
+        </table>
+        <!-- <button type="button" class="btn btn-primary" id="service-list-create-btn">新建</button> -->
 
 
 
