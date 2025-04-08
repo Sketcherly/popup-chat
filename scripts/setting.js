@@ -35,7 +35,7 @@
     }
 
     function change(idx, item) {
-        createStorageGetInstance().then((result) => {
+        getServiceList().then((result) => {
             let serviceList = [];
             if (!result[serviceListKey]) {
                 // do nothing
@@ -218,14 +218,14 @@
 
                     let serviceItemHtml = '';
                     serviceItemHtml += `<td>
-                    <input class="form-check-input me-1" type="radio" name="form--default" value="${i}" id="form--default-${i}"${checked}>
-                    <label class="form-check-label" for="form--default-${i}">选中设为默认</label>
+                    <input class="form-check-input me-1" type="radio" name="default" value="${i}" id="default-${i}"${checked}>
+                    <label class="form-check-label" for="default-${i}">选中设为默认</label>
                 </td>`;
-                    serviceItemHtml += `<td><input type="text" class="form-control" id="form--name" value="${item.name}"></td>`;
-                    serviceItemHtml += `<td><input type="text" class="form-control" id="form--type" value="${item.type}"></td>`;
-                    serviceItemHtml += `<td><input type="text" class="form-control" id="form--host" value="${item.host}"></td>`;
-                    serviceItemHtml += `<td><input type="password" class="form-control" id="form--key" value="${item.key}"></td>`;
-                    serviceItemHtml += `<td><input type="text" class="form-control" id="form--modelName" value="${item.modelName}"></td>`;
+                    serviceItemHtml += `<td><input type="text" class="form-control" name="name" value="${item.name}"></td>`;
+                    serviceItemHtml += `<td><input type="text" class="form-control" name="modelType" value="${item.type}"></td>`;
+                    serviceItemHtml += `<td><input type="text" class="form-control" name="host" value="${item.host}"></td>`;
+                    serviceItemHtml += `<td><input type="password" class="form-control" name="key" value="${item.key}"></td>`;
+                    serviceItemHtml += `<td><input type="text" class="form-control" name="modelName" value="${item.modelName}"></td>`;
                     serviceItemHtml += `<td>
                     <div class="btn-group btn-group-sm">
                         <button type="button" class="btn btn-primary" id="btn--save">保存</button>
