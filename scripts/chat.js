@@ -50,13 +50,13 @@ class MessageHistoryStorage {
 
     // var query = window.location.search.substring(1);
 
-    setTimeout(() => {
+    document.addEventListener("DOMContentLoaded", function() {
         window.parent.postMessage({
             action: 'resizePopupWindow',
             width: document.body.children[0].offsetWidth,
             height: document.body.children[0].offsetHeight,
         }, '*');
-    }, 2);
+    });
 
     function scrollMessageList(messageListObj) {
         // 滚动到底部

@@ -7,15 +7,13 @@
 
 (function() {
 
-    setTimeout(() => {
+    document.addEventListener("DOMContentLoaded", function() {
         window.parent.postMessage({
             action: 'resizePopupWindow',
             width: document.body.children[0].offsetWidth,
             height: document.body.children[0].offsetHeight,
         }, '*');
-    }, 5);
-
-
+    });
 
 })();
 
