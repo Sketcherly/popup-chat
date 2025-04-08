@@ -28,7 +28,7 @@
                 </tr>
             </thead>
             <tbody id="service-list-table">
-                
+
                 <!-- <tr>
                     <th scope="row">1</th>
                     <td>Mark</td>
@@ -39,10 +39,33 @@
                 </tr> -->
             </tbody>
         </table>
-        <!-- <button type="button" class="btn btn-primary" id="service-list-create-btn">新建</button> -->
 
-
-
+        <hr />
+        <div id="translate-prompt-setting">
+            <div class="mb-3">
+                <label for="translate-to" class="form-label">翻译为</label>
+                <input type="text" class="form-control" id="translate-to" name="translate-to" placeholder="简体中文">
+            </div>
+            <div>
+                <div class="mb-3">
+                    <label for="translate-prompt-text" class="form-label">翻译提示词</label>
+                    <textarea class="form-control" name="translate-prompt-text" id="translate-prompt-text"
+                        rows="3"></textarea>
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary" id="btn--save">保存</button>
+        </div>
+        <hr />
+        <div id="summarize-prompt-setting">
+            <div>
+                <div class="mb-3">
+                    <label for="summarize-prompt-text" class="form-label">总结提示词</label>
+                    <textarea class="form-control" name="summarize-prompt-text" id="summarize-prompt-text"
+                        rows="3"></textarea>
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary" id="btn--save">保存</button>
+        </div>
 
     </div>
 
