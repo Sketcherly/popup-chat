@@ -49,7 +49,7 @@ function cleanPopup() {
 let popupShadow = null;
 
 window.addEventListener('message', function (event) {
-    // console.log(event);
+    console.log(event);
 
     if (event.origin.indexOf(chrome.runtime.id) === -1) {
         return;

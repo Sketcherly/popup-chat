@@ -290,150 +290,327 @@
 
 })();
 
-
-// 翻译相关的设置
+// 提示词相关设置
 (function() {
-    const translatePromptTextKey = 'translate-prompt-text';
-    const translateToKey = 'translate-to';
 
-    const translateToPromptTextDefault = `# 精准网页翻译（仅输出目标语言）
+    function appendAddBtn() {
+        let container = document.getElementById('custom-act-list');
 
-## 您的身份与专长
-您是一位跨文化交流专家级翻译大师，不仅精通多国语言的微妙表达，更深谙各语言文化背景和语境差异。您能在保留原文情感与意图的同时，创造如同目标语言母语者原创的流畅译文。
+        let addBtn = document.createElement('button');
+        addBtn.setAttribute('type', 'button');
+        addBtn.setAttribute('class', 'btn btn-primary');
+        addBtn.innerText = '添加';
+        container.appendChild(addBtn);
+        addBtn.addEventListener('click', function() {
 
-## 翻译核心任务
-将待翻译内容转化为完全自然的{{to}}语言，确保译文既忠实原意，又完全符合目标语言的表达习惯、文化背景和语境要求。
-
-## ⚠️ 输出规范（绝对遵守）
-**只输出译文本身**，不添加任何说明、注释、标记或原文。译文应读起来毫无翻译痕迹，如同目标语言原生内容。
-
-## 翻译质量标准
-1. **极致地道化**：使用目标语言母语者日常真实使用的表达，完全消除翻译腔
-2. **情感精准映射**：捕捉并完美重现原文的情感基调、语气变化和态度倾向
-3. **文化本土适应**：灵活运用目标语言特有的俚语、成语和文化表达方式
-4. **结构自然重组**：根据目标语言习惯重构句式和表达逻辑，而非生硬保留原文结构
-5. **意图优先传递**：理解原文深层意图，用最自然的目标语言方式表达核心信息
-
-## 针对中文翻译的精细指导
-当目标语言为中文时：
-- **口语化表达**：采用"爱不释手"、"压榨价值"等真实日常用语，避免书面化
-- **情感真实性**：以略微非正式的语气，自然传递原文的热情和真诚赞赏之情
-- **汉语特色修辞**：适当融入四字成语、歇后语和中文特有修辞手法
-- **中式语序重构**：彻底调整为符合中文思维的表达顺序，消除外语句法痕迹
-- **生活化措辞**：使用"真心好用"、"忍不住安利"等现代中国人日常社交表达
-
-## 待翻译内容
-{{text}}
-
-【注意：请直接呈现完美译文，不要包含任何其他内容】`;
-
-
-    function getTranslatePromptText() {
-        return chrome.storage.local.get([translatePromptTextKey, translateToKey]);
+            appendAddForm(addBtn);
+        });
     }
 
-    function translatePromptTextSaveBtnClickHandler() {
-        let tr = this.parentNode.parentNode.parentNode;
+    function appendSaveBtn() {
+        let container = document.getElementById('custom-act-list');
 
-        let to = tr.querySelector('input[name="translate-to"]').value;
-        if (!to || to === '') {
-            to = '简体中文';
-        }
+        let saveBtn = document.createElement('button');
+        saveBtn.setAttribute('type', 'button');
+        saveBtn.setAttribute('class', 'btn btn-primary');
+        saveBtn.innerText = '保存';
+        container.appendChild(saveBtn);
+        saveBtn.addEventListener('click', function() {
+            let customActList = [];
+            for (let i = 0; i < container.children.length - 1; i++) {
+                let item = container.children[i];
 
-        let promptText = tr.querySelector('textarea[name="translate-prompt-text"]').value;
-        if (!promptText || promptText === '') {
-            promptText = translateToPromptTextDefault;
-        }
+                if (item.getAttribute('id') != 'custom-act-item') {
+                    continue;
+                }
 
-        chrome.storage.local.set({
-            [translatePromptTextKey]: promptText,
-            [translateToKey]: to
-        }).then(() => {
-            console.log("Value is set");
+                let title = item.querySelector('input[name="promptName"]').value;
+                let promptText = item.querySelector('textarea[name="promptText"]').value;
+                customActList.push({
+                    title: title,
+                    promptText: promptText
+                });
+            }
+
+            chrome.storage.local.set({ [CUSTOM_ACT_STORAGE_KEY]: customActList }).then(() => {
+                console.log("Value is set");
+            });
+        });
+        
+    }
+
+    function remove() {
+
+    }
+
+    function appendAddForm(addBtn) {
+        let container = document.getElementById('custom-act-list');
+
+        let div = document.createElement('div');
+        div.setAttribute('id', 'custom-act-item')
+        div.innerHTML = `
+            <div class="mb-3">
+                <label for="promptName-created" class="form-label">名称</label>
+                <input type="text" class="form-control" name="promptName" id="promptName-created" value="">
+            </div>
+            <div>
+                <div class="mb-3">
+                    <label for="promptText-created" class="form-label">提示词</label>
+                    <textarea class="form-control" name="promptText" id="promptText-created" rows="3"></textarea>
+                </div>
+            </div>
+            <button type="button" class="btn btn-danger" id="btn--del">删除</button>
+        `;
+
+        let delBtn = div.querySelector('#btn--del');
+        delBtn.addEventListener('click', function() {
+            div.remove();
+            // addBtn.remove();
+            // appendAddBtn();
         });
 
+        container.insertBefore(div, addBtn);
     }
 
-    (function() {
-        let translatePromptObj = document.getElementById('translate-prompt-setting');
+    function reload() {
+        let container = document.getElementById('custom-act-list');
 
-        getTranslatePromptText()
+        chrome.storage.local.get([CUSTOM_ACT_STORAGE_KEY])
             .then((result) => {
-                let promptText = result[translatePromptTextKey];
-                let to = result[translateToKey];
+                let customActList = result[CUSTOM_ACT_STORAGE_KEY];
 
-                if (!promptText || promptText === '') {
-                    promptText = translateToPromptTextDefault;
+                if (customActList === undefined || customActList === null) {
+                    customActList = DEFAULT_ACT_LIST;
                 }
 
-                if (!to || to === '') {
-                    to = '简体中文';
+                container.innerHTML = '';
+
+                for (let i = 0; i < customActList.length; i++) {
+                    let item = customActList[i];
+                    let div = document.createElement('div');
+                    div.setAttribute('id', 'custom-act-item')
+                    div.innerHTML = `
+                        <div class="mb-3">
+                            <label for="promptName-${i}" class="form-label">名称</label>
+                            <input type="text" class="form-control" name="promptName" id="promptName-${i}" value="${item.title}">
+                        </div>
+                        <div>
+                            <div class="mb-3">
+                                <label for="promptText-${i}" class="form-label">提示词</label>
+                                <textarea class="form-control" name="promptText" id="promptText-${i}" rows="3">${item.promptText}</textarea>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-danger" id="btn--del">删除</button>
+                    `;
+                    container.appendChild(div);
+
+                    let delBtn = div.querySelector('#btn--del');
+                    delBtn.addEventListener('click', function() {
+                        div.remove();
+                        // addBtn.remove();
+                        // appendAddBtn();
+                    });
+
                 }
 
-                translatePromptObj.querySelector('input[name="translate-to"]').value = to;
-                translatePromptObj.querySelector('textarea[name="translate-prompt-text"]').value = promptText;
+                // 添加按钮
+                appendAddBtn();
+                // let addBtn = document.createElement('button');
+                // addBtn.setAttribute('type', 'button');
+                // addBtn.setAttribute('class', 'btn btn-primary');
+                // addBtn.innerText = '添加';
+                // container.appendChild(addBtn);
+                // addBtn.addEventListener('click', function() {
+                //     let div = document.createElement('div');
+                //     div.innerHTML = `
+                //         <div class="mb-3">
+                //             <label for="promptName-${container.children.length}" class="form-label">名称</label>
+                //             <input type="text" class="form-control" name="promptName" id="promptName-${container.children.length}" value="">
+                //         </div>
+                //         <div>
+                //             <div class="mb-3">
+                //                 <label for="promptText-${container.children.length}" class="form-label">提示词</label>
+                //                 <textarea class="form-control" name="promptText" id="promptText-${container.children.length}" rows="3"></textarea>
+                //             </div>
+                //         </div>
+                //     `;
+                //     container.insertBefore(div, addBtn);
+                // });
 
+                // 保存按钮
+                appendSaveBtn();
+                // let saveBtn = document.createElement('button');
+                // saveBtn.setAttribute('type', 'button');
+                // saveBtn.setAttribute('class', 'btn btn-primary');
+                // saveBtn.innerText = '保存';
+                // container.appendChild(saveBtn);
+                // saveBtn.addEventListener('click', function() {
+                //     let customActList = [];
+                //     for (let i = 0; i < container.children.length - 1; i++) {
+                //         let item = container.children[i];
+                //         let title = item.querySelector('input[name="promptName"]').value;
+                //         let promptText = item.querySelector('textarea[name="promptText"]').value;
+                //         customActList.push({
+                //             title: title,
+                //             promptText: promptText
+                //         });
+                //     }
+
+                //     chrome.storage.local.set({ [CUSTOM_ACT_STORAGE_KEY]: customActList }).then(() => {
+                //         console.log("Value is set");
+                //     });
+                // });
             });
+    }
 
-        let translatePromptSaveBtn = translatePromptObj.querySelector('#btn--save');
-        if (translatePromptSaveBtn) {
-            translatePromptSaveBtn.addEventListener('click', translatePromptTextSaveBtnClickHandler);
-        }
-
-
-    })();
+    reload();
 
 })();
 
 
-// 总结相关的设置
-(function() {
-    const summarizePromptTextKey = 'summarize-prompt-text';
+// // 翻译相关的设置
+// (function() {
+//     const translatePromptTextKey = 'translate-prompt-text';
+//     const translateToKey = 'translate-to';
 
-    const summarizeToPromptTextDefault = `You are a highly skilled AI trained in language comprehension and summarization. I would like you to read the text delimited by triple quotes and summarize it into a concise abstract paragraph. Aim to retain the most important points, providing a coherent and readable summary that could help a person understand the main points of the discussion without needing to read the entire text. Please avoid unnecessary details or tangential points. Only give me the output and nothing else. Do not wrap responses in quotes. Respond in the Simplified Chinese language. """ {{text}} """`;
+//     const translateToPromptTextDefault = `# 精准网页翻译（仅输出目标语言）
 
+// ## 您的身份与专长
+// 您是一位跨文化交流专家级翻译大师，不仅精通多国语言的微妙表达，更深谙各语言文化背景和语境差异。您能在保留原文情感与意图的同时，创造如同目标语言母语者原创的流畅译文。
 
-    function getSummarizePromptText() {
-        return chrome.storage.local.get([summarizePromptTextKey]);
-    }
+// ## 翻译核心任务
+// 将待翻译内容转化为完全自然的{{to}}语言，确保译文既忠实原意，又完全符合目标语言的表达习惯、文化背景和语境要求。
 
-    function summarizePromptTextSaveBtnClickHandler() {
-        let tr = this.parentNode.parentNode.parentNode;
+// ## ⚠️ 输出规范（绝对遵守）
+// **只输出译文本身**，不添加任何说明、注释、标记或原文。译文应读起来毫无翻译痕迹，如同目标语言原生内容。
 
-        let promptText = tr.querySelector('textarea[name="summarize-prompt-text"]').value;
-        if (!promptText || promptText === '') {
-            promptText = summarizeToPromptTextDefault;
-        }
+// ## 翻译质量标准
+// 1. **极致地道化**：使用目标语言母语者日常真实使用的表达，完全消除翻译腔
+// 2. **情感精准映射**：捕捉并完美重现原文的情感基调、语气变化和态度倾向
+// 3. **文化本土适应**：灵活运用目标语言特有的俚语、成语和文化表达方式
+// 4. **结构自然重组**：根据目标语言习惯重构句式和表达逻辑，而非生硬保留原文结构
+// 5. **意图优先传递**：理解原文深层意图，用最自然的目标语言方式表达核心信息
 
-        chrome.storage.local.set({
-            [summarizePromptTextKey]: promptText
-        }).then(() => {
-            console.log("Value is set");
-        });
+// ## 针对中文翻译的精细指导
+// 当目标语言为中文时：
+// - **口语化表达**：采用"爱不释手"、"压榨价值"等真实日常用语，避免书面化
+// - **情感真实性**：以略微非正式的语气，自然传递原文的热情和真诚赞赏之情
+// - **汉语特色修辞**：适当融入四字成语、歇后语和中文特有修辞手法
+// - **中式语序重构**：彻底调整为符合中文思维的表达顺序，消除外语句法痕迹
+// - **生活化措辞**：使用"真心好用"、"忍不住安利"等现代中国人日常社交表达
 
-    }
+// ## 待翻译内容
+// {{text}}
 
-    (function() {
-        let summarizePromptObj = document.getElementById('summarize-prompt-setting');
-
-        getSummarizePromptText()
-            .then((result) => {
-                let promptText = result[summarizePromptTextKey];
-
-                if (!promptText || promptText === '') {
-                    promptText = summarizeToPromptTextDefault;
-                }
-
-                summarizePromptObj.querySelector('textarea[name="summarize-prompt-text"]').value = promptText;
-
-            });
-
-        let summarizePromptSaveBtn = summarizePromptObj.querySelector('#btn--save');
-        if (summarizePromptSaveBtn) {
-            summarizePromptSaveBtn.addEventListener('click', summarizePromptTextSaveBtnClickHandler);
-        }
+// 【注意：请直接呈现完美译文，不要包含任何其他内容】`;
 
 
-    })();
+//     function getTranslatePromptText() {
+//         return chrome.storage.local.get([translatePromptTextKey, translateToKey]);
+//     }
 
-})();
+//     function translatePromptTextSaveBtnClickHandler() {
+//         let tr = this.parentNode.parentNode.parentNode;
+
+//         let to = tr.querySelector('input[name="translate-to"]').value;
+//         if (!to || to === '') {
+//             to = '简体中文';
+//         }
+
+//         let promptText = tr.querySelector('textarea[name="translate-prompt-text"]').value;
+//         if (!promptText || promptText === '') {
+//             promptText = translateToPromptTextDefault;
+//         }
+
+//         chrome.storage.local.set({
+//             [translatePromptTextKey]: promptText,
+//             [translateToKey]: to
+//         }).then(() => {
+//             console.log("Value is set");
+//         });
+
+//     }
+
+//     (function() {
+//         let translatePromptObj = document.getElementById('translate-prompt-setting');
+
+//         getTranslatePromptText()
+//             .then((result) => {
+//                 let promptText = result[translatePromptTextKey];
+//                 let to = result[translateToKey];
+
+//                 if (!promptText || promptText === '') {
+//                     promptText = translateToPromptTextDefault;
+//                 }
+
+//                 if (!to || to === '') {
+//                     to = '简体中文';
+//                 }
+
+//                 translatePromptObj.querySelector('input[name="translate-to"]').value = to;
+//                 translatePromptObj.querySelector('textarea[name="translate-prompt-text"]').value = promptText;
+
+//             });
+
+//         let translatePromptSaveBtn = translatePromptObj.querySelector('#btn--save');
+//         if (translatePromptSaveBtn) {
+//             translatePromptSaveBtn.addEventListener('click', translatePromptTextSaveBtnClickHandler);
+//         }
+
+
+//     })();
+
+// })();
+
+
+// // 总结相关的设置
+// (function() {
+//     const summarizePromptTextKey = 'summarize-prompt-text';
+
+//     const summarizeToPromptTextDefault = `You are a highly skilled AI trained in language comprehension and summarization. I would like you to read the text delimited by triple quotes and summarize it into a concise abstract paragraph. Aim to retain the most important points, providing a coherent and readable summary that could help a person understand the main points of the discussion without needing to read the entire text. Please avoid unnecessary details or tangential points. Only give me the output and nothing else. Do not wrap responses in quotes. Respond in the Simplified Chinese language. """ {{text}} """`;
+
+
+//     function getSummarizePromptText() {
+//         return chrome.storage.local.get([summarizePromptTextKey]);
+//     }
+
+//     function summarizePromptTextSaveBtnClickHandler() {
+//         let tr = this.parentNode.parentNode.parentNode;
+
+//         let promptText = tr.querySelector('textarea[name="summarize-prompt-text"]').value;
+//         if (!promptText || promptText === '') {
+//             promptText = summarizeToPromptTextDefault;
+//         }
+
+//         chrome.storage.local.set({
+//             [summarizePromptTextKey]: promptText
+//         }).then(() => {
+//             console.log("Value is set");
+//         });
+
+//     }
+
+//     (function() {
+//         let summarizePromptObj = document.getElementById('summarize-prompt-setting');
+
+//         getSummarizePromptText()
+//             .then((result) => {
+//                 let promptText = result[summarizePromptTextKey];
+
+//                 if (!promptText || promptText === '') {
+//                     promptText = summarizeToPromptTextDefault;
+//                 }
+
+//                 summarizePromptObj.querySelector('textarea[name="summarize-prompt-text"]').value = promptText;
+
+//             });
+
+//         let summarizePromptSaveBtn = summarizePromptObj.querySelector('#btn--save');
+//         if (summarizePromptSaveBtn) {
+//             summarizePromptSaveBtn.addEventListener('click', summarizePromptTextSaveBtnClickHandler);
+//         }
+
+
+//     })();
+
+// })();

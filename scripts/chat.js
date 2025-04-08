@@ -1,15 +1,11 @@
 class MessageHistoryStorage {
 
     constructor() {
-
         this.messageHistoryKey = 'message-history';
-        // this.storageInstance = chrome.storage.session.get(['message-history']);
     }
 
     clear() {
-        let obj = {};
-        obj[this.messageHistoryKey] = [];
-        chrome.storage.session.set(obj);
+        chrome.storage.session.set({ [this.messageHistoryKey]: [] });
     }
 
     /**
@@ -24,9 +20,7 @@ class MessageHistoryStorage {
                 return messageHistory;
             })
             .then((messageHistory) => {
-                const obj = {};
-                obj[this.messageHistoryKey] = messageHistory;
-                chrome.storage.session.set(obj);
+                chrome.storage.session.set({ [this.messageHistoryKey]: messageHistory });
             });;
     }
 
@@ -66,7 +60,7 @@ class MessageHistoryStorage {
     chrome.storage.session.get(['selected-text']).then((result) => {
         let selectedText = result['selected-text'];
 
-        console.log("selectedText Value is " + selectedText);
+        // console.log("selectedText Value is " + selectedText);
 
         let selectedTextChatItemObj = createMessageItem('message-item-text-right', selectedText);
         let messageListObj = document.querySelector('#message-list');
@@ -78,14 +72,30 @@ class MessageHistoryStorage {
         let messageHistoryStorage = new MessageHistoryStorage();
         messageHistoryStorage.clear();
 
-        if (query.indexOf('act=translate') == 0) {
-            resolveTranslatePrompt(selectedText);
-        }
-        if (query.indexOf('act=summarize') == 0) {
-            resolveSummarizePrompt(selectedText);
-        }
+        // if (query.indexOf('act=translate') == 0) {
+        //     resolveTranslatePrompt(selectedText);
+        // }
+        // if (query.indexOf('act=summarize') == 0) {
+        //     resolveSummarizePrompt(selectedText);
+        // }
         if (query.indexOf('act=chat') == 0) {
             resolveChatPrompt(selectedText);
+        }
+        if (query.indexOf('act=idx_') == 0) {
+            let idx = query.substring(8);
+            // console.log(idx);
+            chrome.storage.local.get([CUSTOM_ACT_STORAGE_KEY])
+                .then((result) => {
+                    let customActList = result[CUSTOM_ACT_STORAGE_KEY];
+
+                    if (customActList === undefined || customActList === null) {
+                        customActList = DEFAULT_ACT_LIST;
+                    }
+
+                    let promptOpt = customActList[idx];
+                    // console.log(promptOpt);
+                    resolveCustomPrompt(promptOpt, selectedText);
+                });
         }
 
     });
@@ -133,55 +143,72 @@ class MessageHistoryStorage {
 
     }
 
-    function resolveTranslatePrompt(selectedText) {
+    function resolveCustomPrompt(promptOpt, selectedText) {
 
-        const translatePromptTextKey = 'translate-prompt-text';
-        const translateToKey = 'translate-to';
+        let promptText = promptOpt.promptText;
+        promptText = promptText.replace('{{text}}', selectedText);
 
-        chrome.storage.local.get([translatePromptTextKey, translateToKey])
-            .then((result) => {
-                let promptText = result[translatePromptTextKey];
-                let to = result[translateToKey];
+        let messages = [
+            {
+                "role": "user",
+                "content": promptText
+            }
+        ];
 
-                // console.log(promptText);
+        createAndResolveRequest(messages);
 
-                promptText = promptText.replace('{{to}}', to);
-                promptText = promptText.replace('{{text}}', selectedText);
-
-
-                let messages = [
-                    {
-                        "role": "user",
-                        "content": promptText
-                    }
-                ];
-
-                createAndResolveRequest(messages);
-
-            });
 
     }
 
-    function resolveSummarizePrompt(selectedText) {
-        const summarizePromptTextKey = 'summarize-prompt-text';
+    // function resolveTranslatePrompt(selectedText) {
 
-        chrome.storage.local.get([summarizePromptTextKey])
-            .then((result) => {
-                let promptText = result[summarizePromptTextKey];
-                // console.log(promptText);
-                promptText = promptText.replace('{{text}}', selectedText);
+    //     const translatePromptTextKey = 'translate-prompt-text';
+    //     const translateToKey = 'translate-to';
 
-                let messages = [
-                    {
-                        "role": "user",
-                        "content": promptText
-                    }
-                ];
+    //     chrome.storage.local.get([translatePromptTextKey, translateToKey])
+    //         .then((result) => {
+    //             let promptText = result[translatePromptTextKey];
+    //             let to = result[translateToKey];
+
+    //             // console.log(promptText);
+
+    //             promptText = promptText.replace('{{to}}', to);
+    //             promptText = promptText.replace('{{text}}', selectedText);
+
+
+    //             let messages = [
+    //                 {
+    //                     "role": "user",
+    //                     "content": promptText
+    //                 }
+    //             ];
+
+    //             createAndResolveRequest(messages);
+
+    //         });
+
+    // }
+
+    // function resolveSummarizePrompt(selectedText) {
+    //     const summarizePromptTextKey = 'summarize-prompt-text';
+
+    //     chrome.storage.local.get([summarizePromptTextKey])
+    //         .then((result) => {
+    //             let promptText = result[summarizePromptTextKey];
+    //             // console.log(promptText);
+    //             promptText = promptText.replace('{{text}}', selectedText);
+
+    //             let messages = [
+    //                 {
+    //                     "role": "user",
+    //                     "content": promptText
+    //                 }
+    //             ];
         
-                createAndResolveRequest(messages);
-            });
+    //             createAndResolveRequest(messages);
+    //         });
 
-    }
+    // }
 
     function resolveChatPrompt(selectedText) {
         const systemPromptText = `You are a helpful assistant...`;
