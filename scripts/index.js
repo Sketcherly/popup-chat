@@ -50,40 +50,16 @@
             document.body.children[0].appendChild(settingBtn);
 
             
+            // 最后把渲染后的页面大小发送给父页面，父页面根据这个通知设置窗口大小
             window.parent.postMessage({
                 action: 'resizePopupWindow',
-                // 有时候宽度实际是一个小数，但是这个方法只能得到整数宽度，小数部分丢失了，
-                // 所以+1防止因为宽度不够导致的变形，变形非常明显但是加一像素不明显
-                width: document.body.children[0].offsetWidth + 1,
-                height: document.body.children[0].offsetHeight,
+                // offsetWidth会丢失小数位
+                width: document.body.children[0].getClientRects()[0].width,
+                height: document.body.children[0].getClientRects()[0].height,
             }, '*');
-            // setTimeout(() => {
-                
-            // }, 100000);
 
 
-            // 最后把渲染后的页面大小发送给父页面，父页面根据这个通知设置窗口大小
         });
-
-        // window.addEventListener('onsize', function () {
-        //     console.log("resize");
-        //     window.parent.postMessage({
-        //         action: 'resizePopupWindow',
-        //         width: document.body.children[0].offsetWidth,
-        //         height: document.body.children[0].offsetHeight,
-        //     }, '*');
-        // });
-        
-        // document.addEventListener("DOMContentLoaded", function () {
-
-        //     console.log("DOMContentLoaded");
-
-        //     window.parent.postMessage({
-        //         action: 'resizePopupWindow',
-        //         width: document.body.children[0].offsetWidth,
-        //         height: document.body.children[0].offsetHeight,
-        //     }, '*');
-        // });
 
 })();
 

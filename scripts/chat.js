@@ -47,8 +47,8 @@ class MessageHistoryStorage {
     document.addEventListener("DOMContentLoaded", function() {
         window.parent.postMessage({
             action: 'resizePopupWindow',
-            width: document.body.children[0].offsetWidth,
-            height: document.body.children[0].offsetHeight,
+            width: document.body.children[0].getClientRects()[0].width,
+            height: document.body.children[0].getClientRects()[0].height,
         }, '*');
     });
 
