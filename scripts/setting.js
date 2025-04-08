@@ -222,7 +222,8 @@
                     <label class="form-check-label" for="default-${i}">选中设为默认</label>
                 </td>`;
                     serviceItemHtml += `<td><input type="text" class="form-control" name="name" value="${item.name}"></td>`;
-                    serviceItemHtml += `<td><input type="text" class="form-control" name="modelType" value="${item.type}"></td>`;
+                    // serviceItemHtml += `<td><input type="text" class="form-control" name="modelType" value="${item.type}"></td>`;
+                    serviceItemHtml += `<td>OpenAI</td>`;
                     serviceItemHtml += `<td><input type="text" class="form-control" name="host" value="${item.host}"></td>`;
                     serviceItemHtml += `<td><input type="password" class="form-control" name="key" value="${item.key}"></td>`;
                     serviceItemHtml += `<td><input type="text" class="form-control" name="modelName" value="${item.modelName}"></td>`;
@@ -244,9 +245,9 @@
                     let radio = trs[i].querySelector('input[type="radio"]');
                     if (radio) {
                         radio.addEventListener('change', function (element) {
-                            let obj = {};
-                            obj[serviceDefaultKey] = element.target.value;
-                            chrome.storage.local.set(obj).then(() => {
+                            chrome.storage.local.set({
+                                [serviceDefaultKey]: element.target.value
+                            }).then(() => {
                             });
                         });
                     }
@@ -257,12 +258,21 @@
                     }
 
                     let viewBtn = trs[i].querySelector('#btn--view');
-                    // if (viewBtn) {
-                    //     viewBtn.addEventListener('click', function () {
-                    //         let item = serviceList[i];
-                    //         alert(JSON.stringify(item));
-                    //     });
-                    // }
+                    if (viewBtn) {
+                        viewBtn.addEventListener('click', function () {
+                            let tr = this.parentNode.parentNode.parentNode;
+                            let input = tr.querySelector('input[name="key"]');
+
+                            if (input.type === 'password') {
+                                input.type = 'text';
+                                viewBtn.innerText = '隐藏';
+                            }
+                            else {
+                                input.type = 'password';
+                                viewBtn.innerText = '查看';
+                            }
+                        });
+                    }
 
                     let delBtn = trs[i].querySelector('#btn--del');
                     if (delBtn) {
