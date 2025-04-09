@@ -84,9 +84,9 @@ class MessageHistoryStorage {
         if (query.indexOf('act=idx_') == 0) {
             let idx = query.substring(8);
             // console.log(idx);
-            chrome.storage.local.get([CUSTOM_ACT_STORAGE_KEY])
+            chrome.storage.local.get([CUSTOM_PROMPT_STORAGE_KEY])
                 .then((result) => {
-                    let customActList = result[CUSTOM_ACT_STORAGE_KEY];
+                    let customActList = result[CUSTOM_PROMPT_STORAGE_KEY];
 
                     if (customActList === undefined || customActList === null) {
                         customActList = DEFAULT_PROMPT_LIST;
