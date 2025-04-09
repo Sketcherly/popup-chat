@@ -4,6 +4,7 @@
   "description": "一个即用即走的聊天窗口，支持OpenAI的chat",
   "version": "1.0",
   "action": {
+    "default_popup": "pages/popup.html"
   },
   "host_permissions": [
     "*://*/*"
