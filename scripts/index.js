@@ -1,12 +1,12 @@
 
 (function () {
 
-    chrome.storage.local.get([CUSTOM_ACT_STORAGE_KEY])
+    chrome.storage.local.get([CUSTOM_PROMPT_STORAGE_KEY])
         .then((result) => {
-            let customActList = result[CUSTOM_ACT_STORAGE_KEY];
+            let customActList = result[CUSTOM_PROMPT_STORAGE_KEY];
 
             if (customActList === undefined || customActList === null) {
-                customActList = DEFAULT_ACT_LIST;
+                customActList = DEFAULT_PROMPT_LIST;
             }
 
             for (let i = 0; i < customActList.length; i++) {

@@ -89,7 +89,7 @@ class MessageHistoryStorage {
                     let customActList = result[CUSTOM_ACT_STORAGE_KEY];
 
                     if (customActList === undefined || customActList === null) {
-                        customActList = DEFAULT_ACT_LIST;
+                        customActList = DEFAULT_PROMPT_LIST;
                     }
 
                     let promptOpt = customActList[idx];

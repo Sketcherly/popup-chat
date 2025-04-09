@@ -56,9 +56,9 @@ const DEFAULT_CHAT_SETTING = {
     'promptText': `You are a helpful assistant...`
 }
 
-const DEFAULT_ACT_LIST = [DEFAULT_TRANSLATE_SETTING, DEFAULT_SUMMARIZE_SETTING];
+const DEFAULT_PROMPT_LIST = [DEFAULT_TRANSLATE_SETTING, DEFAULT_SUMMARIZE_SETTING];
 
-const CUSTOM_ACT_STORAGE_KEY = 'custom-act-list';
+const CUSTOM_PROMPT_STORAGE_KEY = 'custom-prompt-list';
 
 
 
