@@ -12,8 +12,8 @@ html, body {
 .chat-container {
     display: flex;
     flex-direction: column; /* Stack messages and input vertically */
-    height: 400px;
-    max-width: 640px; /* Max width as requested for demo, but could be 100% for full mobile */
+    height: 350px;
+    max-width: 450px; /* Max width as requested for demo, but could be 100% for full mobile */
     margin: 0 auto; /* Center container if screen is wider than max-width */
     background-color: #ffffff; /* White background for the chat area */
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
