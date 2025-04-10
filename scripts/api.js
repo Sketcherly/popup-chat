@@ -51,39 +51,54 @@ class OpenAI {
 
         let responseBody = '';
 
+        let responseBodyStream = '';
+
         function resolveStreamData(value) {
             const decoder = new TextDecoder();
             let responseMessageData = decoder.decode(value);
             // console.log(responseMessageData);
 
-            let responseMessageStart = 'data: ';
-            let responseMessageEnd = '[DONE]';
-            let responseMessageLines = responseMessageData.split('\n');
-            for (let i = 0; i < responseMessageLines.length; i++) {
-                let responseMessageLine = responseMessageLines[i];
-                let responseMessage = responseMessageLine.substring(responseMessageStart.length);
-                if (responseMessage.startsWith(responseMessageEnd)) {
+            const responseMessageStart = 'data: ';
+            const responseMessageEnd = '[DONE]';
+
+            responseBodyStream += responseMessageData;
+
+            // 先将这次拿到的数据和之前剩下的数据拼接
+            // 然后找是不是有\n
+            // 如果有\n就分割成行，然后取出来当做一个json处理
+            // 直到没有\n之后，将剩下的数据继续保存在responseBodyStream中等待下次收到数据处理
+            let nextLineStartAt = responseBodyStream.indexOf('\n');
+            while (nextLineStartAt >= 0) {
+                let responseMessageLine = responseBodyStream.substring(0, nextLineStartAt);
+                responseBodyStream = responseBodyStream.substring(nextLineStartAt + 1);
+                // 继续查找下一个\n
+                nextLineStartAt = responseBodyStream.indexOf('\n');
+                // console.log(responseMessageLine);
+
+                // 开始处理取出来的一行数据
+                if (responseMessageLine.startsWith(responseMessageStart)) {
+                    // 处理掉开头的data: 
+                    responseMessageLine = responseMessageLine.substring(responseMessageStart.length);
+                }
+
+                if (responseMessageLine.startsWith(responseMessageEnd)) {
                     continue;
                 }
-                if (responseMessage.trim().length === 0) {
-                    // messageItemTextLoadingObj.parentElement.insertBefore(document.createTextNode('\n'), messageItemTextLoadingObj);
+                if (responseMessageLine.trim().length === 0) {
                     continue;
                 }
-                // console.log(responseMessage);
-                let responseDataObj = JSON.parse(responseMessage);
+
+                let responseDataObj = JSON.parse(responseMessageLine);
                 // console.log(responseDataObj);
                 let content = responseDataObj.choices[0].delta.content;
                 if (!!content) {
-                    // messageItemTextLoadingObj.parentElement.insertBefore(document.createTextNode(content), messageItemTextLoadingObj);
-                    // responseMessageDom.querySelector('.message-item-text').appendChild(document.createTextNode(content));
-                    // scrollMessageList(popupObj);
-                    // popupObj.querySelector('#message-list').scrollTo(0, popupObj.querySelector('#message-list').scrollHeight);
                     if (resolveText) {
-                        responseBody += content;
-                        
                         resolveText(content);
+
+                        responseBody += content;
                     }
                 }
+
             }
 
         }
