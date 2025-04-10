@@ -61,6 +61,28 @@ html, body {
     border-bottom-right-radius: 4px; /* Slightly flatten corner for 'tail' effect */
 }
 
+.message-item-text-loading {
+    vertical-align: middle;
+    padding-top: 0.4em;
+    margin-left: 0.25em;
+    font-size: 0.6em;
+    animation: typing .85s step-end infinite;
+}
+
+/* 打印效果 */
+@keyframes typing {
+
+    from,
+    to {
+        /* box-shadow: 1px 0 0 0 ; */
+        background-color: #000000 transparent;
+    }
+
+    50% {
+        background-color: #000000;
+    }
+}
+
 /* Chat Input Area */
 .chat-input {
     display: flex;
