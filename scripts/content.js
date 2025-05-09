@@ -117,7 +117,7 @@ function createPopupObj(x, y, src, init) {
     // 先设置为全屏大小，等渲染完获取到宽高后再重新设置大小
     popupObj.style.width = document.body.clientWidth + 'px';
     popupObj.style.height = document.body.clientHeight + 'px';
-    popupObj.style.visibility = 'hidden';
+    // popupObj.style.visibility = 'hidden';
     popupParentShadow.appendChild(popupObj);
     
 

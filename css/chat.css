@@ -4,7 +4,7 @@ html, body {
     padding: 0;
     height: 100%; /* Ensure body takes full height */
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; /* Nicer default font */
-    background-color: #f0f2f5; /* Light background for the page */
+    /* background-color: #f0f2f5; */ /* Light background for the page */
     overscroll-behavior-y: contain; /* Prevent pull-to-refresh issues on mobile */
 }
 

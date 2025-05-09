@@ -15,14 +15,14 @@
                 btn.setAttribute('type', 'button');
                 btn.setAttribute('class', 'btn btn-primary');
                 btn.innerText = item.title;
-        
+
                 btn.addEventListener('click', function () {
                     window.parent.postMessage({
                         action: 'navTo',
                         page: 'pages/chat.html?act=idx_' + i,
                     }, '*');
                 });
-        
+
                 document.body.children[0].appendChild(btn);
             }
 
@@ -39,16 +39,18 @@
             });
             document.body.children[0].appendChild(chatBtn);
 
-            setTimeout(() => {
-                // 最后把渲染后的页面大小发送给父页面，父页面根据这个通知设置窗口大小
-                window.parent.postMessage({
-                    action: 'resizePopupWindow',
-                    // offsetWidth会丢失小数位
-                    width: document.body.children[0].getClientRects()[0].width,
-                    height: document.body.children[0].getClientRects()[0].height,
-                }, '*');
-            }, 20);
-
+            // 等页面加载完之后通知父窗口弹窗的大小
+            requestAnimationFrame(function () {
+                // 一次可能会不保险
+                requestAnimationFrame(function () {
+                    window.parent.postMessage({
+                        action: 'resizePopupWindow',
+                        // offsetWidth会丢失小数位
+                        width: document.body.children[0].getClientRects()[0].width,
+                        height: document.body.children[0].getClientRects()[0].height,
+                    }, '*');
+                });
+            })
 
         });
 

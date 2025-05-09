@@ -45,13 +45,16 @@ class MessageHistoryStorage {
     // var query = window.location.search.substring(1);
 
     document.addEventListener("DOMContentLoaded", function() {
-        setTimeout(() => {
-            window.parent.postMessage({
-                action: 'resizePopupWindow',
-                width: document.body.children[0].getClientRects()[0].width,
-                height: document.body.children[0].getClientRects()[0].height,
-            }, '*');
-        }, 20);
+        requestAnimationFrame(function () {
+            // 一次可能会不保险
+            requestAnimationFrame(function () {
+                window.parent.postMessage({
+                    action: 'resizePopupWindow',
+                    width: document.body.children[0].getClientRects()[0].width,
+                    height: document.body.children[0].getClientRects()[0].height,
+                }, '*');
+            });
+        });
     });
 
     function scrollMessageList(messageListObj) {
