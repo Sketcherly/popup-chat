@@ -45,11 +45,13 @@ class MessageHistoryStorage {
     // var query = window.location.search.substring(1);
 
     document.addEventListener("DOMContentLoaded", function() {
-        window.parent.postMessage({
-            action: 'resizePopupWindow',
-            width: document.body.children[0].getClientRects()[0].width,
-            height: document.body.children[0].getClientRects()[0].height,
-        }, '*');
+        setTimeout(() => {
+            window.parent.postMessage({
+                action: 'resizePopupWindow',
+                width: document.body.children[0].getClientRects()[0].width,
+                height: document.body.children[0].getClientRects()[0].height,
+            }, '*');
+        }, 20);
     });
 
     function scrollMessageList(messageListObj) {
