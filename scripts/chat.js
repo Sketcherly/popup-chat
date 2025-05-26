@@ -45,16 +45,18 @@ class MessageHistoryStorage {
     // var query = window.location.search.substring(1);
 
     document.addEventListener("DOMContentLoaded", function() {
-        requestAnimationFrame(function () {
+
+        // 等页面加载完之后通知父窗口弹窗的大小
+        setTimeout(() => {
             // 一次可能会不保险
-            requestAnimationFrame(function () {
+            setTimeout(() => {
                 window.parent.postMessage({
                     action: 'resizePopupWindow',
                     width: document.body.children[0].getClientRects()[0].width,
                     height: document.body.children[0].getClientRects()[0].height,
                 }, '*');
-            });
-        });
+            }, 0);
+        }, 0);
     });
 
     function scrollMessageList(messageListObj) {

@@ -65,7 +65,7 @@ window.addEventListener('message', function (event) {
     
         popupObj.style.width = popupWidth + 'px';
         popupObj.style.height = popupHeight + 'px';
-        popupObj.style.zIndex = '9999';
+        popupObj.style.visibility = 'visible';
         
         
         popupObj.style.left = calcPopupPositionX(mousePositionX, popupWidth) + "px";
@@ -118,15 +118,14 @@ function createPopupObj(x, y, src, init) {
     // 先设置为全屏大小，等渲染完获取到宽高后再重新设置大小
     popupObj.style.width = document.body.clientWidth + 'px';
     popupObj.style.height = document.body.clientHeight + 'px';
-    // 先移到最底层看不见的地方，算好了再放到最上边，不然会闪一下
-    popupObj.style.zIndex = '-9999';
-    // popupObj.style.visibility = 'hidden';
+    // 先隐藏，算好了再展示，不然会闪一下
+    popupObj.style.visibility = 'hidden';
     popupParentShadow.appendChild(popupObj);
     
 
 
     popupObj.innerHTML = `
-<iframe id="${popup_window_id}" src="${chrome.runtime.getURL(src)}" style="width: 100%; height: 100%; border: none; overflow: hidden;"></iframe>
+<iframe id="${popup_window_id}" allowTransparency="true" src="${chrome.runtime.getURL(src)}" style="width: 100%; height: 100%; border: none; overflow: hidden;"></iframe>
     `;
 
     // 添加到文档并保护它

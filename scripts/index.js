@@ -40,17 +40,17 @@
             document.body.children[0].appendChild(chatBtn);
 
             // 等页面加载完之后通知父窗口弹窗的大小
-            requestAnimationFrame(function () {
+            setTimeout(() => {
                 // 一次可能会不保险
-                requestAnimationFrame(function () {
+                setTimeout(() => {
                     window.parent.postMessage({
                         action: 'resizePopupWindow',
                         // offsetWidth会丢失小数位
                         width: document.body.children[0].getClientRects()[0].width,
                         height: document.body.children[0].getClientRects()[0].height,
                     }, '*');
-                });
-            })
+                }, 100);
+            }, 0);
 
         });
 
