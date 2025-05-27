@@ -50,13 +50,15 @@ class MessageHistoryStorage {
         setTimeout(() => {
             // 一次可能会不保险
             setTimeout(() => {
-                window.parent.postMessage({
-                    action: 'resizePopupWindow',
-                    width: document.body.children[0].getClientRects()[0].width,
-                    height: document.body.children[0].getClientRects()[0].height,
-                }, '*');
-            }, 0);
-        }, 0);
+                setTimeout(() => {
+                    window.parent.postMessage({
+                        action: 'resizePopupWindow',
+                        width: document.body.children[0].getClientRects()[0].width,
+                        height: document.body.children[0].getClientRects()[0].height,
+                    }, '*');
+                }, 10);
+            }, 10);
+        }, 10);
     });
 
     function scrollMessageList(messageListObj) {
