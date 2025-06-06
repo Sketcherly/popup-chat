@@ -210,6 +210,14 @@ class Gemini extends BaseAPIService {
             return null;
         }
 
+        const responseMessageStart = 'data: ';
+        const responseMessageEnd = '[DONE]';
+
+        // 处理数据行前缀
+        if (line.startsWith(responseMessageStart)) {
+            line = line.substring(responseMessageStart.length);
+        }
+
         try {
             const responseDataObj = JSON.parse(line);
             // Gemini API 的响应格式可能不同，这里需要根据实际 API 文档调整
@@ -258,7 +266,7 @@ class Gemini extends BaseAPIService {
         console.log('Gemini API:', serviceParam_url, serviceParam_model);
 
         // 构建 Gemini API 的请求 URL
-        const apiUrl = `${serviceParam_url}/models/${serviceParam_model}:streamGenerateContent?key=${serviceParam_key}`;
+        const apiUrl = `${serviceParam_url}/models/${serviceParam_model}:streamGenerateContent?alt=sse&key=${serviceParam_key}`;
 
         const data = this.convertMessagesToGeminiFormat(messages);
 

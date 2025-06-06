@@ -63,13 +63,13 @@
         let tr = this.parentNode.parentNode.parentNode;
 
         let name = tr.querySelector('input[name="name"]').value;
-        // let modelType = tr.querySelector('input[name="modelType"]').value;
+        let type = tr.querySelector('select[name="type"]').value;
         let host = tr.querySelector('input[name="host"]').value;
         let key = tr.querySelector('input[name="key"]').value;
         let modelName = tr.querySelector('input[name="modelName"]').value;
         let item = {
             name: name,
-            type: '0',
+            type: type,
             key: key,
             host: host,
             modelName: modelName
@@ -100,7 +100,10 @@
                 <input type="text" class="form-control form-control-sm" name="name">
             </td>
             <td>
-                <span class="badge bg-secondary">OpenAI</span>
+                <select class="form-select form-select-sm" name="type">
+                    <option value="0">OpenAI</option>
+                    <option value="1">Gemini</option>
+                </select>
             </td>
             <td>
                 <input type="text" class="form-control form-control-sm" name="host">
@@ -206,6 +209,10 @@
 
                 for (let i = 0; i < serviceList.length; i++) {
                     let item = serviceList[i];
+                    // 确保type字段存在，如果不存在则设为默认值'0'(OpenAI)
+                    if (!item.type) {
+                        item.type = '0';
+                    }
                     let serviceItem = document.createElement('tr');
 
                     let checked = '';
@@ -225,7 +232,10 @@
                         <input type="text" class="form-control form-control-sm" name="name" value="${item.name}">
                     </td>
                     <td>
-                        <span class="badge bg-secondary">OpenAI</span>
+                        <select class="form-select form-select-sm" name="type">
+                            <option value="0" ${item.type === '0' ? 'selected' : ''}>OpenAI</option>
+                            <option value="1" ${item.type === '1' ? 'selected' : ''}>Gemini</option>
+                        </select>
                     </td>
                     <td>
                         <input type="text" class="form-control form-control-sm" name="host" value="${item.host}">
