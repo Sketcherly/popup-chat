@@ -327,6 +327,13 @@
                       <input type="text" class="form-control" name="promptName" id="promptName-${index}" value="">
                   </div>
                   <div class="mb-3">
+                      <label for="promptIcon-${index}" class="form-label fw-bold">图标</label>
+                      <div class="input-group">
+                          <input type="text" class="form-control" name="promptIcon" id="promptIcon-${index}" value="">
+                          <span class="input-group-text icon-preview" id="icon-preview-${index}"></span>
+                      </div>
+                  </div>
+                  <div class="mb-3">
                       <label for="promptText-${index}" class="form-label fw-bold">提示词</label>
                       <textarea class="form-control" name="promptText" id="promptText-${index}" rows="5"></textarea>
                   </div>
@@ -337,7 +344,22 @@
         // Create a temporary div to hold the new HTML, then extract the card element
         const div = document.createElement('div');
         div.innerHTML = cardHtml.trim();
-        return div.firstChild;
+        const card = div.firstChild;
+
+        // Add event listener for icon preview
+        const iconInput = card.querySelector(`#promptIcon-${index}`);
+        const iconPreview = card.querySelector(`#icon-preview-${index}`);
+
+        iconInput.addEventListener('input', function() {
+            const iconHtml = this.value.trim();
+            if (iconHtml) {
+                iconPreview.innerHTML = iconHtml;
+            } else {
+                iconPreview.innerHTML = '';
+            }
+        });
+
+        return card;
     }
 
     // --- Logic for the "Add" button ---
@@ -382,17 +404,19 @@
 
         customPromptCardList.forEach((card) => {
             const promptNameInput = card.querySelector('input[name="promptName"]');
+            const promptIconInput = card.querySelector('input[name="promptIcon"]');
             const promptTextInput = card.querySelector('textarea[name="promptText"]');
 
             if (promptNameInput && promptTextInput) {
                 customPromptList.push({
                     title: promptNameInput.value.trim(),
+                    icon: promptIconInput ? promptIconInput.value.trim() : '',
                     promptText: promptTextInput.value.trim()
                 });
             }
         });
 
-        console.log("Saving data...");
+        console.log("Saving data...", customPromptList);
 
         chrome.storage.local.set({ [CUSTOM_PROMPT_STORAGE_KEY]: customPromptList }).then(() => {
             console.log("customPromptList is set");
@@ -419,8 +443,16 @@
                     const card = createPromptCard(i);
                     customPromptListDiv.appendChild(card);
 
-                    card.querySelector('input[name="promptName"]').value = item.title;
-                    card.querySelector('textarea[name="promptText"]').value = item.promptText;
+                    card.querySelector('input[name="promptName"]').value = item.title || '';
+                    card.querySelector('input[name="promptIcon"]').value = item.icon || '';
+                    card.querySelector('textarea[name="promptText"]').value = item.promptText || '';
+
+                    // 触发图标预览更新
+                    const iconInput = card.querySelector('input[name="promptIcon"]');
+                    const iconPreview = card.querySelector('.icon-preview');
+                    if (iconInput && iconPreview && item.icon) {
+                        iconPreview.innerHTML = item.icon;
+                    }
                 }
             });
     }
