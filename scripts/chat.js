@@ -111,10 +111,37 @@ class MessageHistoryStorage {
 
 
     function createMessageItem(className, text) {
-        let messageItem = document.createElement('div');
-        messageItem.classList.add('message-item-text', className);
-        messageItem.innerHTML = text;
-        return messageItem;
+        // 兼容旧的类名，同时创建新的消息结构
+        if (className === 'message-item-text-right') {
+            return createNewMessageItem('sent', '我', text);
+        } else if (className === 'message-item-text-left') {
+            return createNewMessageItem('received', 'AI', text);
+        } else {
+            // 保持旧的结构以兼容现有代码
+            let messageItem = document.createElement('div');
+            messageItem.classList.add('message-item-text', className);
+            messageItem.innerHTML = text;
+            return messageItem;
+        }
+    }
+
+    function createNewMessageItem(type, sender, text) {
+        // 创建符合1.html样式的消息结构
+        let messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', type);
+
+        let senderSpan = document.createElement('span');
+        senderSpan.classList.add('message-sender');
+        senderSpan.textContent = sender;
+
+        let bubbleDiv = document.createElement('div');
+        bubbleDiv.classList.add('message-bubble');
+        bubbleDiv.innerHTML = text;
+
+        messageDiv.appendChild(senderSpan);
+        messageDiv.appendChild(bubbleDiv);
+
+        return messageDiv;
     }
 
 
@@ -128,16 +155,23 @@ class MessageHistoryStorage {
         scrollMessageList(messageListObj);
 
         let messageItemTextLoadingObj = responseMessageDom.querySelector('.message-item-text-loading');
+        let messageBubble = responseMessageDom.querySelector('.message-bubble') || responseMessageDom;
 
         function resolveText(text) {
-            messageItemTextLoadingObj.parentElement.insertBefore(document.createTextNode(text), messageItemTextLoadingObj);
+            if (messageItemTextLoadingObj) {
+                messageBubble.insertBefore(document.createTextNode(text), messageItemTextLoadingObj);
+            } else {
+                messageBubble.appendChild(document.createTextNode(text));
+            }
 
             // scrollMessageList(popupObj);
 
         }
 
         function resolveDone(responseBody) {
-            messageItemTextLoadingObj.remove();
+            if (messageItemTextLoadingObj) {
+                messageItemTextLoadingObj.remove();
+            }
 
             let messageHistoryStorage = new MessageHistoryStorage();
             messageHistoryStorage.append({
@@ -244,37 +278,18 @@ class MessageHistoryStorage {
         chatInputObj.style = '';
 
         // 让输入框获取焦点
-        const textarea = chatInputObj.querySelector('#chat-input-textarea');
+        const inputElement = chatInputObj.querySelector('#chat-input-textarea');
 
         setTimeout(() => {
             // 不延时的话页面会跳到顶部
-            textarea.value = '';
-            textarea.focus();
+            inputElement.value = '';
+            inputElement.focus();
         }, 50);
 
-        // 让输入框高度自适应
-        textarea.addEventListener('input', function () {
-            textarea.style.height = 'auto'; // Reset height to shrink if text is deleted
-            let newHeight = textarea.scrollHeight;
-            const maxHeight = 48; // Must match CSS max-height
-
-            if (newHeight > maxHeight) {
-                newHeight = maxHeight;
-                textarea.style.overflowY = 'auto'; // Ensure scrollbar appears if needed
-            } else {
-                textarea.style.overflowY = 'hidden'; // Hide scrollbar if below max height
-            }
-            // Only set height if it's different from initial to prevent jumpiness
-            if (textarea.value === '') {
-                textarea.style.height = 'auto'; // Let CSS min-height take over
-            } else {
-                textarea.style.height = `${newHeight}px`;
-            }
-
-        });
+        // 普通input不需要高度自适应逻辑
 
         function sendChatMessage() {
-            let inputText = textarea.value;
+            let inputText = inputElement.value;
             if (inputText.trim().length == 0) {
                 return;
             }
@@ -318,15 +333,15 @@ class MessageHistoryStorage {
 
 
             // 清空输入框
-            textarea.value = '';
-            textarea.focus();
+            inputElement.value = '';
+            inputElement.focus();
 
         }
 
 
         // 发送事件绑定
-        textarea.addEventListener('keydown', function (event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
+        inputElement.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
                 event.preventDefault();
                 sendChatMessage();
             }

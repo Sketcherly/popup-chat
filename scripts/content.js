@@ -105,9 +105,8 @@ function createPopupObj(x, y, src, init) {
             top: 0;
             left: 0;
             z-index: 9999;
-            font-size: 16px;
             overflow: hidden;
-            border-radius: 6px;
+            border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
     `;
