@@ -115,7 +115,7 @@ class MessageHistoryStorage {
         if (className === 'message-item-text-right') {
             return createNewMessageItem('sent', '我', text);
         } else if (className === 'message-item-text-left') {
-            return createNewMessageItem('received', 'AI', text);
+            return createNewMessageItem('received', 'Assistant', text);
         } else {
             // 保持旧的结构以兼容现有代码
             let messageItem = document.createElement('div');
